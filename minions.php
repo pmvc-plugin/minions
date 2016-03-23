@@ -62,18 +62,20 @@ class minions extends \PMVC\PlugIn\curl\curl
             }
         }
         $curlPlug->post($host, function($r) use($callback, $minionsServer) {
-            $json = \PMVC\fromJson($r->body);
+            $json =json_decode($r->body);
             if (!isset($json->r)) {
                 return !trigger_error("Minions respond failed. ".var_export($json,true));
             }
-            $r = $json->r;
-            $r->body = base64_decode($r->body);
+            $serverTime = $json->serverTime;
+            $r =& $json->r;
+            unset($json);
+            $r->body = gzuncompress(urldecode($r->body));
             call_user_func (
                 $callback, 
                 $r, 
                 array (
                     $minionsServer, 
-                    $json->serverTime
+                    $serverTime
                 )
             );
         }, array(
