@@ -56,6 +56,9 @@ class minions extends \PMVC\PlugIn\curl\curl
         if (is_string($minionsServer)) {
             $host = $minionsServer;
         } else {
+            if (!isset($minionsServer[0])) {
+                return !trigger_error("Minions server config not correct. ".var_export($minionsServer,true), E_USER_WARNING);
+            }
             $host = $minionsServer[0];
             if (isset($minionsServer[1])) {
                 $options += $minionsServer[1];
