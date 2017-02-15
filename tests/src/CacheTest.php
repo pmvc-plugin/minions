@@ -21,7 +21,7 @@ class CacheTest extends PHPUnit_Framework_TestCase
             _CLASS=>__NAMESPACE__.'\FakeGuid'
         ]);
         $minions->processCache(null, 1000);
-        $this->assertTrue(isset($guid['db']['31702a7af977c80d4d2a1daed66385c8']));
+        $this->assertTrue(isset($guid['db']));
     }
 }
 
