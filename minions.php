@@ -32,16 +32,17 @@ class minions extends curl
     function handleQueue($callback, $params)
     {
         $curls = $this->getCurls();
-        if (!empty($curls) && \PMVC\isArray($curls)) {
-            foreach ($curls as $curl) {
-                $this->queue[] = array(
-                    self::options=>$curl->set(),
-                    self::callback=>$curl->getCallback()
-                );
-                $curl->clean();
-            }
-            $this->clean();
+        if (empty($curls) || !count($curls)) {
+            return;
         }
+        foreach ($curls as $curl) {
+            $this->queue[] = array(
+                self::options=>$curl->set(),
+                self::callback=>$curl->getCallback()
+            );
+            $curl->clean();
+        }
+        $this->clean();
         $curlPlug = \PMVC\plug(self::curl);
         while(count($this->queue))
         {
