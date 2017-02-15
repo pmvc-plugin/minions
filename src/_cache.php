@@ -28,11 +28,11 @@ class cache
         $callback = $curlRequest[minions::callback];
         $hash = \PMVC\hash($options);
         if (isset($this->_db[$hash])) {
-            $expire = $this->_db->ttl($hash);
-            if ($expire > $ttl) {
-                $r = json_decode($this->_db[$hash]);
+            $r = json_decode($this->_db[$hash]);
+            $createTime = \PMVC\get($r, 'createTime', 0);
+            if ($createTime+ $ttl- time() > 0) {
                 $r->body = gzuncompress(urldecode($r->body));
-                $r->expire = $expire;
+                $r->expire = $this->_db->ttl($hash)[0];
                 $r->hash = $this->_db->getCompositeKey($hash);
                 if (is_callable($callback)) {
                     $callback($r);
@@ -47,6 +47,7 @@ class cache
                     $callback($r);
                 }
                 $r->body = urlencode(gzcompress($r->body,9));
+                $r->createTime = time();
                 $this->_db->setCache($ttl);
                 $this->_db[$hash] = json_encode($r);
             }
