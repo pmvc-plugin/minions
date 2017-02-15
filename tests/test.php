@@ -1,6 +1,10 @@
 <?php
-PMVC\Load::plug();
-PMVC\addPlugInFolder('../');
+
+namespace PMVC\PlugIn\minions;
+
+use PHPUnit_Framework_TestCase;
+use PMVC;
+
 class MinionsTest extends PHPUnit_Framework_TestCase
 {
     private $_plug = 'minions';
@@ -14,3 +18,4 @@ class MinionsTest extends PHPUnit_Framework_TestCase
     }
 
 }
+

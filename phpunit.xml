@@ -2,7 +2,7 @@
 <phpunit backupGlobals="false"
          backupStaticAttributes="false"
          colors="true"
-         bootstrap="vendor/autoload.php"
+         bootstrap="tests/include.php"
          convertErrorsToExceptions="true"
          convertNoticesToExceptions="true"
          convertWarningsToExceptions="true"
@@ -11,7 +11,8 @@
          syntaxCheck="false">
     <testsuites>
         <testsuite name="Application Test Suite">
-            <file>test.php</file>
+            <directory>./tests/</directory>
+            <file>./tests/test.php</file>
         </testsuite>
     </testsuites>
     <php>
