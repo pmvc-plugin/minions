@@ -8,7 +8,7 @@ use PMVC;
 class AskTest extends PHPUnit_Framework_TestCase
 {
     private $_plug = 'minions';
-    function testProcess()
+    function testAskProcess()
     {
         $minions = \PMVC\plug($this->_plug);
         $minions['hosts'] = [

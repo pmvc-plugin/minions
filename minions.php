@@ -20,7 +20,13 @@ class minions extends curl
 
     function process($more=null)
     {
-        $this->handleQueue([$this->ask(), 'process'], [$more]);        
+        $this->handleQueue([$this->ask(), 'process'], [$more]);
+    }
+
+    function processCache($more=null, $ttl=86400)
+    {
+        $this->handleQueue([$this->cache(), 'process'], [$more, $ttl]);
+        $this['cache']->finish();
     }
 
     function handleQueue($callback, $params)

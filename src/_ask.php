@@ -15,7 +15,7 @@ class ask
     {
         $hosts = $caller[minions::hosts];
         if (empty($hosts) || !is_array($hosts)) {
-            throw new LengthException('Minons host is empty.');
+            throw new LengthException('Minons hosts is empty.');
         }
         $this->_host = (new ListIterator($hosts))
             ->getIterator();
@@ -62,8 +62,8 @@ class ask
             $serverTime = $json->serverTime;
             $r =& $json->r;
             unset($json);
-            $r->body = gzuncompress(urldecode($r->body));
             if (is_callable($callback)) {
+                $r->body = gzuncompress(urldecode($r->body));
                 call_user_func (
                     $callback, 
                     $r, 
