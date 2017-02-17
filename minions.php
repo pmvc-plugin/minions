@@ -43,7 +43,6 @@ class minions extends curl
             $curl->clean();
         }
         $this->clean();
-        $curlPlug = \PMVC\plug(self::curl);
         while(count($this->queue))
         {
             $pop = array_pop($this->queue);
