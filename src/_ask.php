@@ -43,6 +43,7 @@ class ask
     {
         $callback = $curl[minions::callback];
         $options = $curl[minions::options];
+        $options[CURLOPT_URL] = (string)$options[CURLOPT_URL];
         if (is_string($minionsServer)) {
             $host = $minionsServer;
         } else {
