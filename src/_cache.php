@@ -34,6 +34,7 @@ class cache
                 $r->body = gzuncompress(urldecode($r->body));
                 $r->expire = $this->_db->ttl($hash)[0];
                 $r->hash = $this->_db->getCompositeKey($hash);
+                $r->purge = $this->getPurge($hash);
                 if (is_callable($callback)) {
                     $callback($r);
                 }
@@ -43,16 +44,32 @@ class cache
         $oCurl = $this->_curl->get(
             null,
             function($r) use ($callback, $hash, $ttl){
+                $bool = null;
                 if (is_callable($callback)) {
-                    $callback($r);
+                    $bool = $callback($r);
                 }
                 $r->body = urlencode(gzcompress($r->body,9));
                 $r->createTime = time();
-                $this->_db->setCache($ttl);
-                $this->_db[$hash] = json_encode($r);
+                $r->purge = $this->getPurge($hash);
+                if ($bool!==false) {
+                    $this->_db->setCache($ttl);
+                    $this->_db[$hash] = json_encode($r);
+                }
             }
         );
         $oCurl->set($options);
+    }
+
+    public function getPurge($hash)
+    {
+        return function() use ($hash) {
+            $this->purge($hash);
+        };
+    }
+
+    public function purge($id)
+    {
+        unset($this->_db[$id]);
     }
 
     public function finish()
