@@ -11,7 +11,7 @@ ${_INIT_CONFIG}[_CLASS] = __NAMESPACE__.'\minions';
 
 class minions extends curl
 {
-    private $queue=array();
+    private $_queue=[];
     const options = 'options';
     const callback = 'callback';
     const hosts = 'hosts';
@@ -20,6 +20,9 @@ class minions extends curl
 
     function process($more=null)
     {
+        if (!empty($this['cookieHandler'])) {
+            $this->ask()->handleCookie($this['cookieHandler']);
+        }
         $this->handleQueue([$this->ask(), 'process'], [$more]);
     }
 
@@ -36,18 +39,18 @@ class minions extends curl
             return;
         }
         foreach ($curls as $curl) {
-            $this->queue[] = array(
+            $this->_queue[] = [ 
                 self::options=>$curl->set(),
                 self::callback=>$curl->getCallback()
-            );
+            ];
             $curl->clean();
         }
         $this->clean();
-        while(count($this->queue))
+        while(count($this->_queue))
         {
-            $pop = array_pop($this->queue);
+            $pop = array_pop($this->_queue);
             call_user_func_array($callback, array_merge([$pop], $params));
-            if (empty($this->queue)) {
+            if (empty($this->_queue)) {
                 break;
             }
         }

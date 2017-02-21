@@ -23,6 +23,18 @@ class AskTest extends PHPUnit_Framework_TestCase
         $minions->ask()->setCurl($fakeCurl);
         $minions->process();
     }
+
+    function testStoreCookies()
+    {
+        $minions = \PMVC\plug($this->_plug);
+        $host = 'fake1';
+        $minions['hosts'] = [
+            $host,
+        ];
+        $fakeSetCookie = 'id=a3fWa; Expires=Wed, 21 Oct 2015 07:28:00 GMT; Secure; HttpOnly';
+        $minions->ask()->storeCookies($fakeSetCookie, $host);
+        $this->assertEquals($fakeSetCookie, $minions->ask()->cookies[$host]['id']);
+    }
 }
 
 class fakeCurlWithAsk {
@@ -38,7 +50,7 @@ class fakeCurlWithAsk {
                 'serverTime'=>111
             ])
         ];
-        $callback($r);
+        $callback($r, $this);
         $this->_assert->assertEquals($this->_hosts[$this->_i], $host);
         $this->_i++;
         if ($this->_i>=count($this->_hosts)) {
