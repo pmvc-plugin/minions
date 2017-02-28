@@ -78,7 +78,7 @@ class ask
             }
         }
         $this->_curl->post($host, function($r, $curlHelper) use($callback, $minionsServer) {
-            $json =json_decode($r->body);
+            $json =\PMVC\fromJson($r->body);
             if (!isset($json->r)) {
                 return !trigger_error("Minions respond failed. ".var_export($json,true));
             }
