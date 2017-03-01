@@ -21,7 +21,7 @@ class minions extends curl
     function process($more=null)
     {
         if (!empty($this['cookieHandler'])) {
-            $this->ask()->handleCookie($this['cookieHandler']);
+            $this->ask()->handleCookie();
             unset($this['cookieHandler']);
         }
         $this->handleQueue([$this->ask(), 'process'], [$more]);

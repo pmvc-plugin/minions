@@ -23,8 +23,12 @@ class ask
         $this->_curl = \PMVC\plug(minions::curl);
     }
 
-    public function handleCookie($handler)
+    public function handleCookie()
     {
+        $handler = $this->caller['cookieHandler'];
+        if (empty($handler)) {
+            return;
+        }
         foreach ($this->_hosts as $h) {
             $this->ask(
                 $h, 
