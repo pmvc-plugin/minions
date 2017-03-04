@@ -43,10 +43,14 @@ class cache
         }
         $oCurl = $this->_curl->get(
             null,
-            function($r) use ($callback, $hash, $ttl){
+            function($r, $curlHelper) use (
+                $callback,
+                $hash,
+                $ttl
+            ) {
                 $bool = null;
                 if (is_callable($callback)) {
-                    $bool = $callback($r);
+                    $bool = $callback($r, $curlHelper);
                 }
                 $r->body = urlencode(gzcompress($r->body,9));
                 $r->createTime = time();
