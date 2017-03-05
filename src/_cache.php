@@ -36,7 +36,7 @@ class cache
                 $r->hash = $this->_db->getCompositeKey($hash);
                 $r->purge = $this->getPurge($hash);
                 if (is_callable($callback)) {
-                    $callback($r);
+                    $callback($r, null);
                 }
                 return;
             }
