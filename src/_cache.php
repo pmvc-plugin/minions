@@ -35,9 +35,16 @@ class cache
                 $r->expire = $this->_db->ttl($hash)[0];
                 $r->hash = $this->_db->getCompositeKey($hash);
                 $r->purge = $this->getPurge($hash);
+                $bool = null;
                 if (is_callable($callback)) {
-                    $callback($r, null);
+                    $bool = $callback($r, null);
                 }
+                if ($bool===false) {
+                    call_user_func($r->purge);    
+                }
+                \PMVC\dev(function() use ($r){
+                    return \PMVC\get($r, ['hash', 'expire', 'url']);
+                },'cache');
                 return;
             }
         }
@@ -54,7 +61,6 @@ class cache
                 }
                 $r->body = urlencode(gzcompress($r->body,9));
                 $r->createTime = time();
-                $r->purge = $this->getPurge($hash);
                 if ($bool!==false) {
                     $this->_db->setCache($ttl);
                     $this->_db[$hash] = json_encode($r);
