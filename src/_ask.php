@@ -74,7 +74,11 @@ class ask
             $host = $minionsServer;
         } else {
             if (!isset($minionsServer[0])) {
-                return !trigger_error("Minions server config not correct. ".var_export($minionsServer,true), E_USER_WARNING);
+                return !trigger_error(
+                    'Minions server config not correct. '.
+                    var_export($minionsServer,true),
+                    E_USER_WARNING
+                );
             }
             $host = $minionsServer[0];
             if (isset($minionsServer[1])) {
@@ -83,10 +87,13 @@ class ask
         }
         $this->_curl->post($host, function($r, $curlHelper) use($callback, $minionsServer) {
             $json =\PMVC\fromJson($r->body);
-            if (!isset($json->r)) {
-                return !trigger_error("Minions respond failed. ".var_export($json,true));
-            }
             $serverTime = $json->serverTime;
+            if (!isset($json->r)) {
+                return !trigger_error(
+                    'Minions respond failed. '.
+                    var_export([$json, $minionsServer, $serverTime],true)
+                );
+            }
             $r =& $json->r;
             $setCookie = \PMVC\get($r->header,'set-cookie');
             if (!empty($setCookie)) {
