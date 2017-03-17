@@ -49,7 +49,7 @@ class minions extends curl
         $this->clean();
         while(count($this->_queue))
         {
-            $pop = array_pop($this->_queue);
+            $pop = array_shift($this->_queue);
             call_user_func_array($callback, array_merge([$pop], $params));
             if (empty($this->_queue)) {
                 break;
