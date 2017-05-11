@@ -4,6 +4,7 @@ namespace PMVC\PlugIn\minions;
 
 use PHPUnit_Framework_TestCase;
 use PMVC;
+use ReflectionClass;
 
 class AskTest extends PHPUnit_Framework_TestCase
 {
@@ -32,7 +33,15 @@ class AskTest extends PHPUnit_Framework_TestCase
             $host,
         ];
         $fakeSetCookie = 'id=a3fWa; Expires=Wed, 21 Oct 2015 07:28:00 GMT; Secure; HttpOnly';
-        $minions->ask()->storeCookies($fakeSetCookie, $host);
+        $ask = $minions->ask();
+        $class = new ReflectionClass('\PMVC\PlugIn\minions\ask');
+        $methodName = '_storeCookies';
+        $method = $class->getMethod($methodName);
+        $method->setAccessible(true);
+        $method->invokeArgs($ask, [
+            $fakeSetCookie,
+            $host
+        ]);
         $this->assertEquals($fakeSetCookie, $minions->ask()->cookies[$host]['id']);
     }
 }

@@ -70,22 +70,11 @@ class ask
                 join(';', $cookies);
         }
 
-        if (is_string($minionsServer)) {
-            $host = $minionsServer;
-        } else {
-            if (!isset($minionsServer[0])) {
-                return !trigger_error(
-                    'Minions server config not correct. '.
-                    var_export($minionsServer,true),
-                    E_USER_WARNING
-                );
-            }
-            $host = $minionsServer[0];
-            if (isset($minionsServer[1])) {
-                $options += $minionsServer[1];
-            }
+        $host = $this->_getHost($minionsServer);
+        if (is_array($minionsServer) && isset($minionsServer[1])) {
+            $options += $minionsServer[1];
         }
-        $this->_curl->post($host, function($r, $curlHelper) use($callback, $minionsServer) {
+        $this->_curl->post($host, function($r, $curlHelper) use($callback, $minionsServer, $host) {
             $json =\PMVC\fromJson($r->body);
             $serverTime = $json->serverTime;
             if (!isset($json->r)) {
@@ -97,7 +86,7 @@ class ask
             $r =& $json->r;
             $setCookie = \PMVC\get($r->header,'set-cookie');
             if (!empty($setCookie)) {
-                $this->storeCookies($setCookie, $minionsServer);
+                $this->_storeCookies($setCookie, $host);
             }
             unset($json);
             if (is_callable($callback)) {
@@ -118,16 +107,33 @@ class ask
         ]);
     }
 
-    public function storeCookies($cookies, $minionsServer)
+    private function _getHost($minionsServer)
+    {
+        if (is_string($minionsServer)) {
+            $host = $minionsServer;
+        } else {
+            $host = \PMVC\get($minionsServer, '0');
+        }
+        if (empty($host)) {
+            return !trigger_error(
+                'Minions server config not correct. '.
+                var_export($minionsServer,true),
+                E_USER_WARNING
+            );
+        }
+        return $host;
+    }
+
+    private function _storeCookies($cookies, $host)
     {
         $cookies = \PMVC\toArray($cookies);
-        if (empty($this->cookies[$minionsServer])) {
-            $this->cookies[$minionsServer] = [];
+        if (empty($this->cookies[$host])) {
+            $this->cookies[$host] = [];
         }
         foreach ($cookies as $c) {
             $name = $this->_getCookieName($c);
             if ($name) {
-                $this->cookies[$minionsServer][$name] = $c;
+                $this->cookies[$host][$name] = $c;
             }
         }
     }
