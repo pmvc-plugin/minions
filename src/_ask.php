@@ -89,8 +89,20 @@ class ask
                 $this->_storeCookies($setCookie, $host);
             }
             unset($json);
+            $r->body = gzuncompress(urldecode($r->body));
+            \PMVC\dev(function() use (
+                $minionsServer,
+                $serverTime,
+                $r
+            ){
+                return [
+                    'Minions Client'=>$minionsServer,
+                    'Minions Time'=>$serverTime,
+                    'Respond'=>$r,
+                    'Body'=> \PMVC\fromJson($r->body)
+                ];
+            },'minions');
             if (is_callable($callback)) {
-                $r->body = gzuncompress(urldecode($r->body));
                 call_user_func (
                     $callback, 
                     $r,
