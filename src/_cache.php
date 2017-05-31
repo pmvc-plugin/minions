@@ -37,7 +37,7 @@ class cache
                 $r->purge = $this->getPurge($hash);
                 $bool = null;
                 if (is_callable($callback)) {
-                    $bool = $callback($r, null);
+                    $bool = $callback($r, $options);
                 }
                 if ($bool===false) {
                     call_user_func($r->purge);    
