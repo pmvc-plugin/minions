@@ -32,7 +32,7 @@ class cache
             $createTime = \PMVC\get($r, 'createTime', 0);
             if ($createTime+ $ttl- time() > 0) {
                 $r->body = gzuncompress(urldecode($r->body));
-                $r->expire = $this->_db->ttl($hash)[0];
+                $r->expire = $this->_db->ttl($hash);
                 $r->hash = $this->_db->getCompositeKey($hash);
                 $r->purge = $this->getPurge($hash);
                 $bool = null;

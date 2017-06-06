@@ -1,4 +1,5 @@
 <?php
+
 namespace PMVC\PlugIn\minions;
 
 use PMVC\PlugIn\curl\curl;
