@@ -4,6 +4,7 @@ namespace PMVC\PlugIn\minions;
 
 use LengthException;
 use PMVC\ListIterator;
+use PMVC\PlugIn\curl\CurlHelper;
 
 ${_INIT_CONFIG}[_CLASS] = __NAMESPACE__.'\cache';
 
@@ -37,7 +38,10 @@ class cache
                 $r->purge = $this->getPurge($hash);
                 $bool = null;
                 if (is_callable($callback)) {
-                    $bool = $callback($r, $options);
+                    $CurlHelper = new CurlHelper();
+                    $CurlHelper->setCallback($callback);
+                    $CurlHelper->set($options);
+                    $bool = $callback($r, $CurlHelper);
                 }
                 if ($bool===false) {
                     call_user_func($r->purge);    
