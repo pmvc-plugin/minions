@@ -28,33 +28,7 @@ class cache
         $options = $curlRequest[minions::options];
         $callback = $curlRequest[minions::callback];
         $hash = \PMVC\hash($options);
-        if (isset($this->_db[$hash])) {
-            $r = json_decode($this->_db[$hash]);
-            $createTime = \PMVC\get($r, 'createTime', 0);
-            if ($createTime+ $ttl- time() > 0) {
-                $r->body = gzuncompress(urldecode($r->body));
-                $r->expire = $this->_db->ttl($hash);
-                $r->hash = $this->_db->getCompositeKey($hash);
-                $r->purge = $this->getPurge($hash);
-                $bool = null;
-                if (is_callable($callback)) {
-                    $CurlHelper = new CurlHelper();
-                    $CurlHelper->setCallback($callback);
-                    $CurlHelper->set($options);
-                    $bool = $callback($r, $CurlHelper);
-                }
-                if ($bool===false) {
-                    call_user_func($r->purge);    
-                }
-                \PMVC\dev(function() use ($r){
-                    return \PMVC\get($r, ['hash', 'expire', 'url']);
-                },'cache');
-                return;
-            }
-        }
-        $oCurl = $this->_curl->get(
-            null,
-            function($r, $curlHelper) use (
+        $setCacheCallback = function($r, $curlHelper) use (
                 $callback,
                 $hash,
                 $ttl
@@ -69,7 +43,34 @@ class cache
                     $this->_db->setCache($ttl);
                     $this->_db[$hash] = json_encode($r);
                 }
+            };
+        if (isset($this->_db[$hash])) {
+            $r = json_decode($this->_db[$hash]);
+            $createTime = \PMVC\get($r, 'createTime', 0);
+            if ($createTime+ $ttl- time() > 0) {
+                $r->body = gzuncompress(urldecode($r->body));
+                $r->expire = $this->_db->ttl($hash);
+                $r->hash = $this->_db->getCompositeKey($hash);
+                $r->purge = $this->getPurge($hash);
+                $bool = null;
+                if (is_callable($callback)) {
+                    $CurlHelper = new CurlHelper();
+                    $CurlHelper->setCallback($setCacheCallback);
+                    $CurlHelper->set($options);
+                    $bool = $callback($r, $CurlHelper);
+                }
+                if ($bool===false) {
+                    call_user_func($r->purge);    
+                }
+                \PMVC\dev(function() use ($r){
+                    return \PMVC\get($r, ['hash', 'expire', 'url']);
+                },'cache');
+                return;
             }
+        }
+        $oCurl = $this->_curl->get(
+            null,
+            $setCacheCallback
         );
         $oCurl->set($options);
     }
