@@ -12,7 +12,6 @@ ${_INIT_CONFIG}[_CLASS] = __NAMESPACE__.'\minions';
 
 class minions extends curl
 {
-    private $_queue=[];
     const options = 'options';
     const callback = 'callback';
     const hosts = 'hosts';
@@ -40,19 +39,20 @@ class minions extends curl
         if (empty($curls) || !count($curls)) {
             return;
         }
+        $queue = [];
         foreach ($curls as $curl) {
-            $this->_queue[] = [ 
+            $queue[] = [ 
                 self::options=>$curl->set(),
                 self::callback=>$curl->getCallback()
             ];
             $curl->clean();
         }
         $this->clean();
-        while(count($this->_queue))
+        while(count($queue))
         {
-            $pop = array_shift($this->_queue);
+            $pop = array_shift($queue);
             call_user_func_array($callback, array_merge([$pop], $params));
-            if (empty($this->_queue)) {
+            if (empty($queue)) {
                 break;
             }
         }
