@@ -62,7 +62,11 @@ class cache
                 if ($bool===false) {
                     call_user_func($r->purge);    
                 }
-                \PMVC\dev(function() use ($r){
+                \PMVC\dev(
+                /**
+                 * @help Minons cache status
+                 */
+                function() use ($r){
                     return \PMVC\get($r, ['hash', 'expire', 'url']);
                 },'cache');
                 return;
@@ -73,6 +77,17 @@ class cache
             $setCacheCallback
         );
         $oCurl->set($options);
+        \PMVC\dev(
+        /**
+         * @help Minons cache status
+         */
+        function() use ($hash, $options){
+            return [
+                'status'=>'Miss Cache',
+                'hash'=>$hash,
+                'options'=>$options
+            ];
+        },'cache');
     }
 
     public function getPurge($hash)

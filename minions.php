@@ -18,22 +18,35 @@ class minions extends curl
     const curl = 'curl';
     const delay = 'delay';
 
-    function process($more=null)
+    public function init()
+    {
+        parent::init();
+        $this['process'] = [
+            $this,
+            \PMVC\get(
+                $this,
+                'processFunction',
+                'processClient'
+            )
+        ];
+    }
+
+    public function processClient($more=null)
     {
         if (!empty($this['cookieHandler'])) {
             $this->ask()->handleCookie();
             unset($this['cookieHandler']);
         }
-        $this->handleQueue([$this->ask(), 'process'], [$more]);
+        $this->_handleQueue([$this->ask(), 'process'], [$more]);
     }
 
-    function processCache($more=null, $ttl=86400)
+    public function processCache($more=null, $ttl=86400)
     {
-        $this->handleQueue([$this->cache(), 'process'], [$more, $ttl]);
+        $this->_handleQueue([$this->cache(), 'process'], [$more, $ttl]);
         $this['cache']->finish();
     }
 
-    function handleQueue($callback, $params)
+    private function _handleQueue($callback, $params)
     {
         $curls = $this->getCurls();
         if (empty($curls) || !count($curls)) {
