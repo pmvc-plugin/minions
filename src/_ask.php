@@ -25,25 +25,27 @@ class ask
 
     public function handleCookie()
     {
-        $handler = $this->caller['cookieHandler'];
-        if (empty($handler)) {
+        $handlers = $this->caller['cookieHandler'];
+        if (empty($handlers)) {
             return;
         }
         $more = [];
         \PMVC\dev(function() use (&$more){
             $more[]= 'request_header';
         }, 'request_header');
-        foreach ($this->_hosts as $h) {
-            $this->ask(
-                $h, 
-                [
-                    minions::options => $handler->set(),
-                    minions::callback=> $handler->getCallback()
-                ],
-                $more
-            );
+        foreach ($handlers as $handler) {
+            foreach ($this->_hosts as $h) {
+                $this->ask(
+                    $h,
+                    [
+                        minions::options => $handler->set(),
+                        minions::callback=> $handler->getCallback()
+                    ],
+                    $more
+                );
+            }
+            $this->_curl->process();
         }
-        $this->_curl->process();
     }
     
     public function __invoke()
@@ -85,9 +87,12 @@ class ask
         if (is_array($minionsServer) && isset($minionsServer[1])) {
             $options += $minionsServer[1];
         }
-        \PMVC\dev(function() use (&$host) {
-            $host = \PMVC\plug('url')->getUrl($host);
-            $host->query['--debug']=1;
+        $curlOptions = [
+            'curl'=>$options,
+            'more'=>$more
+        ];
+        \PMVC\dev(function() use (&$curlOptions) {
+            $curlOptions['--trace']=1;
         }, 'minions-client-debug');
         $this->_curl->post($host, function($r, $curlHelper) use($callback, $minionsServer, $host) {
             $json =\PMVC\fromJson($r->body);
@@ -99,6 +104,7 @@ class ask
                 );
             }
             $r =& $json->r;
+            $debugs =& $json->debugs;
             $setCookie = \PMVC\get($r->header,'set-cookie');
             if (!empty($setCookie)) {
                 $this->_storeCookies($setCookie, $host);
@@ -113,13 +119,15 @@ class ask
                 $minionsServer,
                 $serverTime,
                 $r,
-                $curlHelper
+                $curlHelper,
+                $debugs
             ){
                 $optUtil = [\PMVC\plug('curl')->opt_to_str(), 'all']; 
                 $curlField = $optUtil($curlHelper->set());
                 $curlField['POSTFIELDS']['curl'] = $optUtil($curlField['POSTFIELDS']['curl']);
                 return [
                     'Minions Client'=>$minionsServer,
+                    'Minions Debugs'=>$debugs,
                     'Minions Time'=>$serverTime,
                     'Respond'=>$r,
                     'Curl Information'=> $curlField,
@@ -137,10 +145,7 @@ class ask
                     ]
                 );
             }
-        }, [ 
-            'curl'=>$options,
-            'more'=>$more
-        ]);
+        }, $curlOptions);
     }
 
     private function _getHost($minionsServer)
@@ -162,7 +167,6 @@ class ask
 
     private function _storeCookies($cookies, $host)
     {
-        $host = (string)$host;
         $cookies = \PMVC\toArray($cookies);
         if (empty($this->cookies[$host])) {
             $this->cookies[$host] = [];

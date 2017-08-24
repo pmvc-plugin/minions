@@ -33,7 +33,7 @@ class minions extends curl
 
     public function processClient($more=null)
     {
-        if (!empty($this['cookieHandler'])) {
+        if (isset($this['cookieHandler'])) {
             $this->ask()->handleCookie();
             unset($this['cookieHandler']);
         }
