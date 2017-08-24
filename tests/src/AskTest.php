@@ -42,7 +42,7 @@ class AskTest extends PHPUnit_Framework_TestCase
             $fakeSetCookie,
             $host
         ]);
-        $this->assertEquals($fakeSetCookie, $minions->ask()->cookies[$host]['id']);
+        $this->assertEquals('id=a3fWa', $minions->ask()->cookies[$host]['id']);
     }
 }
 

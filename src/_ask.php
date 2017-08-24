@@ -65,9 +65,15 @@ class ask
         $options[CURLOPT_URL] = (string)$options[CURLOPT_URL];
         $cookies = \PMVC\get($this->cookies, $minionsServer);
         if (!$this->caller['ignoreSetCookie'] && $cookies) {
-            $options[CURLOPT_COOKIE] = ((empty($options[CURLOPT_COOKIE])) ? '' :
-                $options[CURLOPT_COOKIE].';') .
-                join(';', $cookies);
+            if (!empty($options[CURLOPT_COOKIE])) {
+                $cookies = array_replace(
+                    $cookies,
+                    $this->_parse_cookie_string(
+                        $options[CURLOPT_COOKIE]
+                    )
+                );
+            }
+            $options[CURLOPT_COOKIE] = join('; ', $cookies);
         }
 
         $host = $this->_getHost($minionsServer);
@@ -90,15 +96,24 @@ class ask
             }
             unset($json);
             $r->body = gzuncompress(urldecode($r->body));
-            \PMVC\dev(function() use (
+            \PMVC\dev(
+            /**
+             * @help Minions ask helper 
+             */
+            function() use (
                 $minionsServer,
                 $serverTime,
-                $r
+                $r,
+                $curlHelper
             ){
+                $optUtil = [\PMVC\plug('curl')->opt_to_str(), 'all']; 
+                $curlField = $optUtil($curlHelper->set());
+                $curlField['POSTFIELDS']['curl'] = $optUtil($curlField['POSTFIELDS']['curl']);
                 return [
                     'Minions Client'=>$minionsServer,
                     'Minions Time'=>$serverTime,
                     'Respond'=>$r,
+                    'Curl Information'=> $curlField,
                     'Body'=> \PMVC\fromJson($r->body)
                 ];
             },'minions');
@@ -144,10 +159,23 @@ class ask
         }
         foreach ($cookies as $c) {
             $name = $this->_getCookieName($c);
+            $c = explode(';', $c)[0];
             if ($name) {
                 $this->cookies[$host][$name] = $c;
             }
         }
+    }
+
+    private function _parse_cookie_string($s)
+    {
+        $cookies = explode(';', $s);
+        $result = [];
+        foreach ($cookies as $c) {
+            $c = trim($c);
+            $name = $this->_getCookieName($c);
+            $result[$name] = $c;
+        }
+        return $c;
     }
 
     private function _getCookieName($one)
