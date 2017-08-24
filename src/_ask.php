@@ -29,13 +29,18 @@ class ask
         if (empty($handler)) {
             return;
         }
+        $more = [];
+        \PMVC\dev(function() use (&$more){
+            $more[]= 'request_header';
+        }, 'request_header');
         foreach ($this->_hosts as $h) {
             $this->ask(
                 $h, 
                 [
                     minions::options => $handler->set(),
                     minions::callback=> $handler->getCallback()
-                ]
+                ],
+                $more
             );
         }
         $this->_curl->process();
@@ -80,6 +85,10 @@ class ask
         if (is_array($minionsServer) && isset($minionsServer[1])) {
             $options += $minionsServer[1];
         }
+        \PMVC\dev(function() use (&$host) {
+            $host = \PMVC\plug('url')->getUrl($host);
+            $host->query['--debug']=1;
+        }, 'minions-client-debug');
         $this->_curl->post($host, function($r, $curlHelper) use($callback, $minionsServer, $host) {
             $json =\PMVC\fromJson($r->body);
             $serverTime = $json->serverTime;
@@ -153,6 +162,7 @@ class ask
 
     private function _storeCookies($cookies, $host)
     {
+        $host = (string)$host;
         $cookies = \PMVC\toArray($cookies);
         if (empty($this->cookies[$host])) {
             $this->cookies[$host] = [];
