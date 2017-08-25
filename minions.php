@@ -43,7 +43,7 @@ class minions extends curl
     public function processCache($more=null, $ttl=86400)
     {
         $this->_handleQueue([$this->cache(), 'process'], [$more, $ttl]);
-        $this['cache']->finish();
+        $this['cache']->finish($more);
     }
 
     private function _handleQueue($callback, $params)
@@ -63,8 +63,8 @@ class minions extends curl
         $this->clean();
         while(count($queue))
         {
-            $pop = array_shift($queue);
-            call_user_func_array($callback, array_merge([$pop], $params));
+            $first = array_shift($queue);
+            call_user_func_array($callback, array_merge([$first], $params));
             if (empty($queue)) {
                 break;
             }

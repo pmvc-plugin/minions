@@ -30,9 +30,6 @@ class ask
             return;
         }
         $more = [];
-        \PMVC\dev(function() use (&$more){
-            $more[]= 'request_header';
-        }, 'request_header');
         foreach ($handlers as $handler) {
             foreach ($this->_hosts as $h) {
                 $this->ask(
@@ -87,9 +84,12 @@ class ask
         if (is_array($minionsServer) && isset($minionsServer[1])) {
             $options += $minionsServer[1];
         }
+        \PMVC\dev(function() use (&$more){
+            $more[]= 'request_header';
+        }, 'req');
         $curlOptions = [
-            'curl'=>$options,
-            'more'=>$more
+            'curl'=> &$options,
+            'more'=> &$more
         ];
         \PMVC\dev(function() use (&$curlOptions) {
             $curlOptions['--trace']=1;

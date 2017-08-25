@@ -27,7 +27,7 @@ class cache
     {
         $options = $curlRequest[minions::options];
         $callback = $curlRequest[minions::callback];
-        $hash = \PMVC\hash($options);
+        $hash = \PMVC\hash([$options, $more]);
         $setCacheCallback = function($r, $curlHelper) use (
                 $callback,
                 $hash,
@@ -102,9 +102,13 @@ class cache
         unset($this->_db[$id]);
     }
 
-    public function finish()
+    public function finish($more=[])
     {
-        $this->_curl->process();
+        $more = \PMVC\toArray($more);
+        \PMVC\dev(function() use (&$more){
+            $more[]= 'request_header';
+        }, 'req');
+        $this->_curl->process($more);
     }
 
     public function setCurl($curl)
