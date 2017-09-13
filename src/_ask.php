@@ -96,13 +96,13 @@ class ask
         }, 'minions-client-debug');
         $this->_curl->post($host, function($r, $curlHelper) use($callback, $minionsServer, $host) {
             $json =\PMVC\fromJson($r->body);
-            $serverTime = $json->serverTime;
             if (!isset($json->r)) {
                 return !trigger_error(
                     'Minions respond failed. '.
-                    var_export([$json, $minionsServer, $serverTime],true)
+                    print_r([$json, $minionsServer],true)
                 );
             }
+            $serverTime = $json->serverTime;
             $r =& $json->r;
             $debugs =& $json->debugs;
             $setCookie = \PMVC\get($r->header,'set-cookie');
