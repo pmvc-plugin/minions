@@ -23,11 +23,17 @@ class cache
         return $this;
     }
 
+    private function _getHash($options, $more)
+    {
+        unset($options[CURLINFO_HEADER_OUT]);
+        return \PMVC\hash([$options, $more]);
+    }
+
     public function process($curlRequest, $more, $ttl)
     {
         $options = $curlRequest[minions::options];
         $callback = $curlRequest[minions::callback];
-        $hash = \PMVC\hash([$options, $more]);
+        $hash = $this->_getHash($options, $more);
         $setCacheCallback = function($r, $curlHelper) use (
                 $callback,
                 $hash,
@@ -67,7 +73,12 @@ class cache
                  * @help Minons cache status
                  */
                 function() use ($r){
-                    return \PMVC\get($r, ['hash', 'expire', 'url']);
+                    return array_merge(
+                        [
+                            'url'=>$r->url, 
+                        ],
+                        \PMVC\get($r, ['hash', 'expire', 'url'])
+                    );
                 },'cache');
                 return;
             }
@@ -83,8 +94,9 @@ class cache
          */
         function() use ($hash, $options){
             return [
-                'status'=>'Miss Cache',
+                'status'=>'miss',
                 'hash'=>$hash,
+                'url'=>$options[CURLOPT_URL],
                 'options'=>$options
             ];
         },'cache');
@@ -114,6 +126,11 @@ class cache
     public function setCurl($curl)
     {
         $this->_curl = $curl;
+    }
+
+    public function setStore($db)
+    {
+        $this->_db = $db;
     }
 
 }
