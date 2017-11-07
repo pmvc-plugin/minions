@@ -23,17 +23,16 @@ class cache
         return $this;
     }
 
-    private function _getHash($options, $more)
+    public function isCache($hash)
     {
-        unset($options[CURLINFO_HEADER_OUT]);
-        return \PMVC\hash([$options, $more]);
+        return isset($this->_db[$hash]);
     }
 
     public function process($curlRequest, $more, $ttl)
     {
         $options = $curlRequest[minions::options];
         $callback = $curlRequest[minions::callback];
-        $hash = $this->_getHash($options, $more);
+        $hash = $curlRequest[minions::hash];
         $setCacheCallback = function($r, $curlHelper) use (
                 $callback,
                 $hash,
@@ -50,13 +49,13 @@ class cache
                     $this->_db[$hash] = json_encode($r);
                 }
             };
-        if (isset($this->_db[$hash])) {
+        if ($this->isCache($hash)) {
             $r = json_decode($this->_db[$hash]);
             $createTime = \PMVC\get($r, 'createTime', 0);
             if ($createTime+ $ttl- time() > 0) {
                 $r->body = gzuncompress(urldecode($r->body));
                 $r->expire = $this->_db->ttl($hash);
-                $r->hash = $this->_db->getCompositeKey($hash);
+                $r->hash = $hash;
                 $r->purge = $this->getPurge($hash);
                 $bool = null;
                 if (is_callable($callback)) {
@@ -120,7 +119,8 @@ class cache
 
     public function purge($id)
     {
-        unset($this->_db[$id]);
+        $key = $this->_db->getCompositeKey($id);
+        unset($this->_db[$key]);
     }
 
     public function finish($more=[])

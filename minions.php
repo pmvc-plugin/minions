@@ -14,9 +14,9 @@ class minions extends curl
 {
     const options = 'options';
     const callback = 'callback';
+    const hash = 'hash';
     const hosts = 'hosts';
     const curl = 'curl';
-    const delay = 'delay';
 
     public function init()
     {
@@ -55,7 +55,8 @@ class minions extends curl
         $queue = [];
         foreach ($curls as $curl) {
             $queue[] = [ 
-                self::options=>$curl->set(),
+                self::hash    =>$curl->getHash(),
+                self::options =>$curl->set(),
                 self::callback=>$curl->getCallback()
             ];
             $curl->clean();
