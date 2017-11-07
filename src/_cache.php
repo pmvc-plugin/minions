@@ -23,7 +23,7 @@ class cache
         return $this;
     }
 
-    public function isCache($hash)
+    public function hasCache($hash)
     {
         return isset($this->_db[$hash]);
     }
@@ -49,7 +49,7 @@ class cache
                     $this->_db[$hash] = json_encode($r);
                 }
             };
-        if ($this->isCache($hash)) {
+        if ($this->hasCache($hash)) {
             $r = json_decode($this->_db[$hash]);
             $createTime = \PMVC\get($r, 'createTime', 0);
             if ($createTime+ $ttl- time() > 0) {
