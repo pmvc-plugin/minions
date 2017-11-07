@@ -54,12 +54,15 @@ class minions extends curl
         }
         $queue = [];
         foreach ($curls as $curl) {
-            $queue[] = [ 
-                self::hash    =>$curl->getHash(),
-                self::options =>$curl->set(),
-                self::callback=>$curl->getCallback()
-            ];
-            $curl->clean();
+            $options = $curl->set();
+            if (!empty($options)) {
+                $queue[] = [ 
+                    self::hash    =>$curl->getHash(),
+                    self::options =>$options,
+                    self::callback=>$curl->getCallback()
+                ];
+                $curl->clean();
+            }
         }
         $this->clean();
         while(count($queue))
