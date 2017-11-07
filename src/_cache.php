@@ -70,15 +70,24 @@ class cache
                 }
                 \PMVC\dev(
                 /**
-                 * @help Minons cache status
+                 * @help Minons cache status. could use with [json|curl]
                  */
                 function() use ($r){
-                    return array_merge(
-                        [
-                            'url'=>$r->url, 
-                        ],
-                        \PMVC\get($r, ['hash', 'expire', 'url'])
-                    );
+                    if (\PMVC\isDev('curl')) {
+                        $rinfo = $r;
+                        if (\PMVC\isDev('json')) {
+                            $rinfo->json = \PMVC\fromJson($r->body);
+                        }
+                    } else {
+                        $rinfo = \PMVC\get(
+                            $r,
+                            ['hash', 'expire']
+                        );
+                    }
+                    return [
+                        $r->url,
+                        'r'=>$rinfo
+                    ];
                 },'cache');
                 return;
             }
