@@ -66,7 +66,7 @@ class ask
     {
         $callback = $curl[minions::callback];
         $options = $curl[minions::options];
-        $options[CURLOPT_URL] = (string)$options[CURLOPT_URL];
+
         $cookies = \PMVC\get($this->cookies, $minionsServer);
         if (!$this->caller['ignoreSetCookie'] && $cookies) {
             if (!empty($options[CURLOPT_COOKIE])) {
@@ -84,9 +84,6 @@ class ask
         if (is_array($minionsServer) && isset($minionsServer[1])) {
             $options += $minionsServer[1];
         }
-        \PMVC\dev(function() use (&$more){
-            $more[]= 'request_header';
-        }, 'req');
         $curlOptions = [
             'curl'=> &$options,
             'more'=> &$more

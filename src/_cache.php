@@ -36,15 +36,23 @@ class cache
         $setCacheCallback = function($r, $curlHelper) use (
                 $callback,
                 $hash,
-                $ttl
+                $ttl,
+                $more
             ) {
                 $bool = null;
+                $keepMore = $r->more;
+                if ($more) {
+                    $r->more = \PMVC\get($keepMore, $more);
+                } else {
+                    $r->more = null;
+                }
                 if (is_callable($callback)) {
                     $bool = $callback($r, $curlHelper);
                 }
-                $r->body = urlencode(gzcompress($r->body,9));
-                $r->createTime = time();
                 if ($bool!==false) {
+                    $r->body = urlencode(gzcompress($r->body,9));
+                    $r->createTime = time();
+                    $r->more = $keepMore;
                     $this->_db->setCache($ttl);
                     $this->_db[$hash] = json_encode($r);
                 }
@@ -57,15 +65,25 @@ class cache
                 $r->expire = $this->_db->ttl($hash);
                 $r->hash = $hash;
                 $r->purge = $this->getPurge($hash);
+                $r->dbCompositeKey = $this->_db->getCompositeKey($hash);
+                if (!empty($more)) {
+                    $r->more = \PMVC\get($r->more, $more);
+                } else {
+                    $r->more = null;
+                }
+
                 $bool = null;
                 if (is_callable($callback)) {
                     $CurlHelper = new CurlHelper();
-                    $CurlHelper->setCallback($setCacheCallback);
-                    $CurlHelper->set($options);
+                    $CurlHelper->setOptions(
+                        null,
+                        $setCacheCallback
+                    );
+                    $CurlHelper->resetOptions($options);
                     $bool = $callback($r, $CurlHelper);
                 }
                 if ($bool===false) {
-                    call_user_func($r->purge);    
+                    call_user_func($r->purge);
                 }
                 \PMVC\dev(
                 /**
@@ -73,14 +91,14 @@ class cache
                  */
                 function() use ($r){
                     if (\PMVC\isDev('curl')) {
-                        $rinfo = $r;
+                        $rinfo = (array)$r;
                         if (\PMVC\isDev('json')) {
-                            $rinfo->json = \PMVC\fromJson($r->body);
+                            $rinfo['json'] = \PMVC\fromJson($r->body);
                         }
                     } else {
                         $rinfo = \PMVC\get(
                             $r,
-                            ['hash', 'expire']
+                            ['hash', 'expire', 'dbCompositeKey']
                         );
                     }
                     return [
@@ -95,7 +113,7 @@ class cache
             null,
             $setCacheCallback
         );
-        $oCurl->set($options);
+        $oCurl->resetOptions($options);
         \PMVC\dev(
         /**
          * @help Minons cache status
@@ -119,17 +137,12 @@ class cache
 
     public function purge($id)
     {
-        $key = $this->_db->getCompositeKey($id);
-        unset($this->_db[$key]);
+        unset($this->_db[$id]);
     }
 
-    public function finish($more=[])
+    public function finish()
     {
-        $more = \PMVC\toArray($more);
-        \PMVC\dev(function() use (&$more){
-            $more[]= 'request_header';
-        }, 'req');
-        $this->_curl->process($more);
+        $this->_curl->process([true]);
     }
 
     public function setCurl($curl)

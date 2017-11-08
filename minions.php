@@ -37,13 +37,19 @@ class minions extends curl
             $this->ask()->handleCookie();
             unset($this['cookieHandler']);
         }
+        \PMVC\dev(function() use (&$more){
+            $more[]= 'request_header';
+        }, 'req');
         $this->_handleQueue([$this->ask(), 'process'], [$more]);
     }
 
     public function processCache($more=null, $ttl=86400)
     {
+        \PMVC\dev(function() use (&$more){
+            $more[]= 'request_header';
+        }, 'req');
         $this->_handleQueue([$this->cache(), 'process'], [$more, $ttl]);
-        $this['cache']->finish($more);
+        $this['cache']->finish();
     }
 
     private function _handleQueue($callback, $params)
