@@ -87,15 +87,22 @@ class cache
                 }
                 \PMVC\dev(
                 /**
-                 * @help Minons cache status. could use with [json|curl]
+                 * @help Minons cache status. could use with ?--trace=[curl|curl-json]
                  */
                 function() use ($r){
-                    if (\PMVC\isDev('curl')) {
+                    /**
+                     * @help Decode body with json, use with ?--trace=cache 
+                     */
+                    \PMVC\dev(function() use (&$rinfo, $r){
                         $rinfo = (array)$r;
-                        if (\PMVC\isDev('json')) {
-                            $rinfo['json'] = \PMVC\fromJson($r->body);
-                        }
-                    } else {
+                        /**
+                         * @help Decode body with json, use with ?--trace=cache,curl 
+                         */
+                        \PMVC\dev(function() use (&$rinfo, $r){
+                            $rinfo['body'] = \PMVC\fromJson($r->body);
+                        },'curl-json');
+                    },'curl');
+                    if (empty($rinfo)) {
                         $rinfo = \PMVC\get(
                             $r,
                             ['hash', 'expire', 'dbCompositeKey']
