@@ -95,6 +95,9 @@ class cache
                      */
                     \PMVC\dev(function() use (&$rinfo, $r){
                         $rinfo = (array)$r;
+                        if (!mb_detect_encoding($rinfo['body'],'utf-8',true)) {
+                            $rinfo['body'] = utf8_encode($rinfo['body']);
+                        }
                         /**
                          * @help Decode body with json, use with ?--trace=cache,curl 
                          */
