@@ -113,7 +113,8 @@ class cache
                     }
                     return [
                         $r->url,
-                        'r'=>$rinfo
+                        'r'=>$rinfo,
+                        'trace'=> \PMVC\plug('debug')->parseTrace(debug_backtrace(), 15, 1)
                     ];
                 },'cache');
                 return;
@@ -133,7 +134,8 @@ class cache
                 'status'=>'miss',
                 'hash'=>$hash,
                 'url'=>$options[CURLOPT_URL],
-                'options'=>$options
+                'options'=>$options,
+                'trace'=> \PMVC\plug('debug')->parseTrace(debug_backtrace(), 15, 1)
             ];
         },'cache');
     }
