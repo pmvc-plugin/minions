@@ -68,11 +68,12 @@ class ask
         $options = $curl[minions::options];
 
         $cookies = \PMVC\get($this->cookies, $minionsServer);
+        $pCookie = \PMVC\plug('cookie');
         if (!$this->caller['ignoreSetCookie'] && $cookies) {
             if (!empty($options[CURLOPT_COOKIE])) {
                 $cookies = array_replace(
                     $cookies,
-                    $this->_parse_cookie_string(
+                    $pCookie->parseCookieString(
                         $options[CURLOPT_COOKIE]
                     )
                 );
@@ -164,35 +165,14 @@ class ask
 
     private function _storeCookies($cookies, $host)
     {
-        $cookies = \PMVC\toArray($cookies);
+        $pCookie = \PMVC\plug('cookie');
         if (empty($this->cookies[$host])) {
             $this->cookies[$host] = [];
         }
-        foreach ($cookies as $c) {
-            $name = $this->_getCookieName($c);
-            $c = explode(';', $c)[0];
-            if ($name) {
-                $this->cookies[$host][$name] = $c;
-            }
-        }
-    }
-
-    private function _parse_cookie_string($s)
-    {
-        $cookies = explode(';', $s);
-        $result = [];
-        foreach ($cookies as $c) {
-            $c = trim($c);
-            $name = $this->_getCookieName($c);
-            $result[$name] = $c;
-        }
-        return $c;
-    }
-
-    private function _getCookieName($one)
-    {
-        $one = explode('=', $one);
-        return $one[0];
+        $this->cookies[$host] = array_replace(
+            $this->cookies[$host],
+            $pCookie->parseSetCookieString($cookies)
+        );
     }
 
     public function setCurl($curl)
