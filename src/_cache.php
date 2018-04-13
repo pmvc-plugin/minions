@@ -23,10 +23,6 @@ class cache
         return $this;
     }
 
-    public function hasCache($hash)
-    {
-        return isset($this->_db[$hash]);
-    }
 
     public function process($curlRequest, $more, $ttl)
     {
@@ -140,16 +136,33 @@ class cache
         },'cache');
     }
 
-    public function getPurge($hash)
+    private function _getHash($maybeCurl)
     {
+        if ($maybeCurl instanceof CurlHelper) {
+            return $maybeCurl->getHash();
+        } else {
+            return $maybeCurl;
+        }
+    }
+
+    public function hasCache($maybeHash)
+    {
+        $hash = $this->_getHash($maybeHash);
+        return isset($this->_db[$hash]);
+    }
+
+    public function getPurge($maybeHash)
+    {
+        $hash = $this->_getHash($maybeHash);
         return function() use ($hash) {
             $this->purge($hash);
         };
     }
 
-    public function purge($id)
+    public function purge($maybeHash)
     {
-        unset($this->_db[$id]);
+        $hash = $this->_getHash($maybeHash);
+        unset($this->_db[$hash]);
     }
 
     public function finish()
