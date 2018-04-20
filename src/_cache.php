@@ -162,7 +162,12 @@ class cache
     public function purge($maybeHash)
     {
         $hash = $this->_getHash($maybeHash);
-        unset($this->_db[$hash]);
+        if (isset($this->_db[$hash])) {
+            unset($this->_db[$hash]);
+            return isset($this->_db[$hash]);
+        } else {
+            return false;
+        }
     }
 
     public function finish()
