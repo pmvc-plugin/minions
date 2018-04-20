@@ -164,7 +164,7 @@ class cache
         $hash = $this->_getHash($maybeHash);
         if (isset($this->_db[$hash])) {
             unset($this->_db[$hash]);
-            return isset($this->_db[$hash]);
+            return !isset($this->_db[$hash]);
         } else {
             return false;
         }
