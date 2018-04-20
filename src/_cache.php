@@ -54,14 +54,9 @@ class cache
                 }
             };
         if ($this->hasCache($hash)) {
-            $r = json_decode($this->_db[$hash]);
+            $r = $this->getCache($hash);
             $createTime = \PMVC\get($r, 'createTime', 0);
             if ($createTime+ $ttl- time() > 0) {
-                $r->body = gzuncompress(urldecode($r->body));
-                $r->expire = $this->_db->ttl($hash);
-                $r->hash = $hash;
-                $r->purge = $this->getPurge($hash);
-                $r->dbCompositeKey = $this->_db->getCompositeKey($hash);
                 if (!empty($more)) {
                     $r->more = \PMVC\get($r->more, $more);
                 } else {
@@ -81,26 +76,33 @@ class cache
                 if ($bool===false) {
                     call_user_func($r->purge);
                 }
+
                 \PMVC\dev(
                 /**
                  * @help Minons cache status. could use with ?--trace=[curl|curl-json]
                  */
                 function() use ($r){
+
+                    \PMVC\dev(
                     /**
                      * @help Decode body with json, use with ?--trace=cache 
                      */
-                    \PMVC\dev(function() use (&$rinfo, $r){
+                    function() use (&$rinfo, $r){
                         $rinfo = (array)$r;
                         if (!mb_detect_encoding($rinfo['body'],'utf-8',true)) {
                             $rinfo['body'] = utf8_encode($rinfo['body']);
                         }
+
+                        \PMVC\dev(
                         /**
                          * @help Decode body with json, use with ?--trace=cache,curl 
                          */
-                        \PMVC\dev(function() use (&$rinfo, $r){
+                        function() use (&$rinfo, $r){
                             $rinfo['body'] = \PMVC\fromJson($r->body);
                         },'curl-json');
+
                     },'curl');
+
                     if (empty($rinfo)) {
                         $rinfo = \PMVC\get(
                             $r,
@@ -113,6 +115,7 @@ class cache
                         'trace'=> \PMVC\plug('debug')->parseTrace(debug_backtrace(), 15, 1)
                     ];
                 },'cache');
+
                 return;
             }
         }
@@ -121,6 +124,7 @@ class cache
             $setCacheCallback
         );
         $oCurl->resetOptions($options);
+
         \PMVC\dev(
         /**
          * @help Minons cache status
@@ -143,6 +147,18 @@ class cache
         } else {
             return $maybeCurl;
         }
+    }
+
+    public function getCache($maybeHash)
+    {
+        $hash = $this->_getHash($maybeHash);
+        $r = json_decode($this->_db[$hash]);
+        $r->body = gzuncompress(urldecode($r->body));
+        $r->expire = $this->_db->ttl($hash);
+        $r->hash = $hash;
+        $r->purge = $this->getPurge($hash);
+        $r->dbCompositeKey = $this->_db->getCompositeKey($hash);
+        return $r;
     }
 
     public function hasCache($maybeHash)
@@ -184,5 +200,4 @@ class cache
     {
         $this->_db = $db;
     }
-
 }
