@@ -152,7 +152,10 @@ class cache
     public function getCache($maybeHash)
     {
         $hash = $this->_getHash($maybeHash);
-        $r = json_decode($this->_db[$hash]);
+        $r = \PMVC\fromJson($this->_db[$hash]);
+        if (!$r) {
+            return false;
+        }
         $r->body = gzuncompress(urldecode($r->body));
         $r->expire = $this->_db->ttl($hash);
         $r->hash = $hash;
