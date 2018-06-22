@@ -5,6 +5,7 @@ namespace PMVC\PlugIn\minions;
 use LengthException;
 use PMVC\ListIterator;
 use PMVC\PlugIn\curl\CurlHelper;
+use PMVC\PlugIn\curl\CurlResponder;
 
 ${_INIT_CONFIG}[_CLASS] = __NAMESPACE__.'\cache';
 
@@ -83,7 +84,8 @@ class cache
                  */
                 function() use ($r) {
                     $r->purge();
-                }, 'purge-'.$r->dbCompositeKey);
+                    return ['Clean-Cache'=>$r->hash];
+                }, 'purge-'.$r->hash);
 
                 \PMVC\dev(
                 /**
@@ -160,11 +162,10 @@ class cache
     public function getCache($maybeHash)
     {
         $hash = $this->_getHash($maybeHash);
-        $r = \PMVC\fromJson($this->_db[$hash]);
+        $r = CurlResponder::fromJson($this->_db[$hash]);
         if (!$r) {
             return false;
         }
-        $r->body = gzuncompress(urldecode($r->body));
         $r->expire = $this->_db->ttl($hash);
         $r->hash = $hash;
         $r->purge = $this->getPurge($hash);
