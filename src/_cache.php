@@ -74,8 +74,16 @@ class cache
                     $bool = $callback($r, $CurlHelper);
                 }
                 if ($bool===false) {
-                    call_user_func($r->purge);
+                    $r->purge();
                 }
+
+                \PMVC\dev( 
+                /**
+                 * @help Purge minons cache
+                 */
+                function() use ($r) {
+                    $r->purge();
+                }, 'purge-'.$r->dbCompositeKey);
 
                 \PMVC\dev(
                 /**
