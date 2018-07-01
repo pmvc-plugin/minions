@@ -30,29 +30,29 @@ class cache
         $callback = $curlRequest[minions::callback];
         $hash = $curlRequest[minions::hash];
         $setCacheCallback = function($r, $curlHelper) use (
-                $callback,
-                $hash,
-                $ttl,
-                $more
-            ) {
-                $bool = null;
-                $keepMore = $r->more;
-                if ($more) {
-                    $r->more = \PMVC\get($keepMore, $more);
-                } else {
-                    $r->more = null;
-                }
-                if (is_callable($callback)) {
-                    $bool = $callback($r, $curlHelper);
-                }
-                if ($bool!==false) {
-                    $r->body = urlencode(gzcompress($r->body,9));
-                    $r->createTime = time();
-                    $r->more = $keepMore;
-                    $this->_db->setCache($ttl);
-                    $this->_db[$hash] = json_encode($r);
-                }
-            };
+            $callback,
+            $hash,
+            $ttl,
+            $more
+        ) {
+            $bool = null;
+            $keepMore = $r->more;
+            if ($more) {
+                $r->more = \PMVC\get($keepMore, $more);
+            } else {
+                $r->more = null;
+            }
+            if (is_callable($callback)) {
+                $bool = $callback($r, $curlHelper);
+            }
+            if ($bool!==false) {
+                $r->body = urlencode(gzcompress($r->body,9));
+                $r->createTime = time();
+                $r->more = $keepMore;
+                $this->_db->setCache($ttl);
+                $this->_db[$hash] = json_encode($r);
+            }
+        };
         if ($this->hasCache($hash)) {
             $r = $this->getCache($hash);
             $createTime = \PMVC\get($r, 'createTime', 0);
@@ -63,7 +63,6 @@ class cache
                     $r->more = null;
                 }
 
-                $bool = null;
                 if (is_callable($callback)) {
                     $CurlHelper = new CurlHelper();
                     $CurlHelper->setOptions(
@@ -71,17 +70,15 @@ class cache
                         $setCacheCallback
                     );
                     $CurlHelper->resetOptions($options);
-                    $bool = $callback($r, $CurlHelper);
-                    $bool = call_user_func_array(
+                    $ttl = call_user_func_array(
                         $callback,
                         [
                             $r,
                             $CurlHelper,
-                            &$ttl
                         ]
                     );
                 }
-                if ($bool===false || $this->_isExpire($createTime, $ttl)) {
+                if ($this->_isExpire($createTime, $ttl)) {
                     $r->purge();
                 }
 
@@ -159,7 +156,15 @@ class cache
 
     private function _isExpire($createTime, $ttl)
     {
-        return ($createTime+ $ttl- time() < 0);
+        if ($ttl === false) {
+            return true;
+        } else {
+            if (is_numeric($ttl)) {
+                return ($createTime+ $ttl- time() < 0);
+            } else {
+                return false;
+            }
+        }
     }
 
     private function _getHash($maybeCurl)
