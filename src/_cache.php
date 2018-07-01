@@ -24,7 +24,6 @@ class cache
         return $this;
     }
 
-
     public function process($curlRequest, $more, $ttl)
     {
         $options = $curlRequest[minions::options];
@@ -57,7 +56,7 @@ class cache
         if ($this->hasCache($hash)) {
             $r = $this->getCache($hash);
             $createTime = \PMVC\get($r, 'createTime', 0);
-            if ($createTime+ $ttl- time() > 0) {
+            if (!$this->_isExpire($createTime, $ttl)) {
                 if (!empty($more)) {
                     $r->more = \PMVC\get($r->more, $more);
                 } else {
@@ -73,12 +72,20 @@ class cache
                     );
                     $CurlHelper->resetOptions($options);
                     $bool = $callback($r, $CurlHelper);
+                    $bool = call_user_func_array(
+                        $callback,
+                        [
+                            $r,
+                            $CurlHelper,
+                            &$ttl
+                        ]
+                    );
                 }
-                if ($bool===false) {
+                if ($bool===false || $this->_isExpire($createTime, $ttl)) {
                     $r->purge();
                 }
 
-                \PMVC\dev( 
+                \PMVC\dev(
                 /**
                  * @help Purge minons cache
                  */
@@ -124,7 +131,7 @@ class cache
                         'r'=>$rinfo,
                         'trace'=> \PMVC\plug('debug')->parseTrace(debug_backtrace(), 15, 1)
                     ];
-                },'cache');
+                },'cache'); // dev
 
                 return;
             }
@@ -148,6 +155,11 @@ class cache
                 'trace'=> \PMVC\plug('debug')->parseTrace(debug_backtrace(), 15, 1)
             ];
         },'cache');
+    }
+
+    private function _isExpire($createTime, $ttl)
+    {
+        return ($createTime+ $ttl- time() < 0);
     }
 
     private function _getHash($maybeCurl)
