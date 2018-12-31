@@ -78,7 +78,7 @@ class ask
                     )
                 );
             }
-            $options[CURLOPT_COOKIE] = join('; ', $cookies);
+            $options[CURLOPT_COOKIE] = $pCookie->toString($cookies);
         }
 
         $host = $this->_getHost($minionsServer);

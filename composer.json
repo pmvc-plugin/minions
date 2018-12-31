@@ -13,6 +13,7 @@
     "require": {
         "ext-mbstring": "*",
         "pmvc/pmvc": "*",
+        "pmvc-plugin/cookie": "*",
         "pmvc-plugin/curl": "*"
     },
     "minimum-stability": "dev"
