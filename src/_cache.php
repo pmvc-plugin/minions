@@ -3,13 +3,12 @@
 namespace PMVC\PlugIn\minions;
 
 use LengthException;
-use PMVC\ListIterator;
 use PMVC\PlugIn\curl\CurlHelper;
 use PMVC\PlugIn\curl\CurlResponder;
 
 ${_INIT_CONFIG}[_CLASS] = __NAMESPACE__.'\cache';
 
-class cache 
+class cache
 {
     private $_curl;
     private $_db;
@@ -29,7 +28,7 @@ class cache
         $options = $curlRequest[minions::options];
         $callback = $curlRequest[minions::callback];
         $hash = $curlRequest[minions::hash];
-        $setCacheCallback = function($r, $curlHelper) use (
+        $setCacheCallback = function ($r, $curlHelper) use (
             $callback,
             $hash,
             $ttl,
@@ -46,7 +45,7 @@ class cache
                 $bool = $callback($r, $curlHelper);
             }
             if ($bool!==false) {
-                $r->body = urlencode(gzcompress($r->body,9));
+                $r->body = urlencode(gzcompress($r->body, 9));
                 $r->createTime = time();
                 $r->more = $keepMore;
                 $this->_db->setCache($ttl);
@@ -83,52 +82,23 @@ class cache
                 }
 
                 \PMVC\dev(
-                /**
-                 * @help Purge minons cache
-                 */
-                function() use ($r) {
-                    $r->purge();
-                    return ['Clean-Cache'=>$r->hash];
-                }, 'purge-'.$r->hash);
+                    /**
+                    * @help Purge minons cache
+                    */
+                    function () use ($r) {
+                        $r->purge();
+                        return ['Clean-Cache'=>$r->hash];
+                    }, $this->_getPurgeDevKey($r->hash)
+                );
 
                 \PMVC\dev(
-                /**
-                 * @help Minons cache status. could use with ?--trace=[curl|curl-json]
-                 */
-                function() use ($r){
-
-                    \PMVC\dev(
                     /**
-                     * @help Decode body with json, use with ?--trace=cache 
-                     */
-                    function() use (&$rinfo, $r){
-                        $rinfo = (array)$r;
-                        if (!mb_detect_encoding($rinfo['body'],'utf-8',true)) {
-                            $rinfo['body'] = utf8_encode($rinfo['body']);
-                        }
-
-                        \PMVC\dev(
-                        /**
-                         * @help Decode body with json, use with ?--trace=cache,curl 
-                         */
-                        function() use (&$rinfo, $r){
-                            $rinfo['body'] = \PMVC\fromJson($r->body);
-                        },'curl-json');
-
-                    },'curl');
-
-                    if (empty($rinfo)) {
-                        $rinfo = \PMVC\get(
-                            $r,
-                            ['hash', 'expire', 'dbCompositeKey']
-                        );
-                    }
-                    return [
-                        $r->url,
-                        'r'=>$rinfo,
-                        'trace'=> \PMVC\plug('debug')->parseTrace(debug_backtrace(), 15, 1)
-                    ];
-                },'cache'); // dev
+                    * @help Minons cache status. could use with ?--trace=[curl|curl-json]
+                    */
+                    function () use ($r) {
+                      return $this->cache_dev($r);
+                    }, 'cache'
+                ); // dev
 
                 return;
             }
@@ -140,18 +110,22 @@ class cache
         $oCurl->resetOptions($options);
 
         \PMVC\dev(
-        /**
-         * @help Minons cache status
-         */
-        function() use ($hash, $options){
-            return [
+            function () use ($hash, $options) {
+                return [
                 'status'=>'miss',
                 'hash'=>$hash,
+                'purge'=> $this->_getPurgeDevKey($hash),
                 'url'=>$options[CURLOPT_URL],
                 'options'=>$options,
                 'trace'=> \PMVC\plug('debug')->parseTrace(debug_backtrace(), 15, 1)
-            ];
-        },'cache');
+                ];
+            }, 'cache'
+        );
+    }
+
+    private function _getPurgeDevKey($hash)
+    {
+        return 'purge-'.$hash;
     }
 
     private function _isExpire($createTime, $ttl)
@@ -199,7 +173,7 @@ class cache
     public function getPurge($maybeHash)
     {
         $hash = $this->_getHash($maybeHash);
-        return function() use ($hash) {
+        return function () use ($hash) {
             $this->purge($hash);
         };
     }
