@@ -6,9 +6,11 @@ use PMVC\PlugIn\curl\curl;
 
 ${_INIT_CONFIG}[_CLASS] = __NAMESPACE__.'\minions';
 
-\PMVC\initPlugin(array(
+\PMVC\initPlugin(
+    [
     'curl'=>null
-));
+    ]
+);
 
 class minions extends curl
 {
@@ -21,14 +23,23 @@ class minions extends curl
     public function init()
     {
         parent::init();
-        $this['process'] = [
+        $this->useCache(false);
+        $this['ttl'] = 86400;
+    }
+
+    public function useCache($bool)
+    {
+        if ($bool) {
+            $this['process'] = [
             $this,
-            \PMVC\get(
-                $this,
-                'processFunction',
-                'processClient'
-            )
-        ];
+            'processCache'
+            ];
+        } else {
+            $this['process'] = [
+            $this,
+            'processClient'
+            ];
+        }
     }
 
     public function processClient($more=null)
@@ -37,17 +48,24 @@ class minions extends curl
             $this->ask()->handleCookie();
             unset($this['cookieHandler']);
         }
-        \PMVC\dev(function() use (&$more){
-            $more[]= 'request_header';
-        }, 'req');
+        \PMVC\dev(
+            function () use (&$more) {
+                $more[]= 'request_header';
+            }, 'req'
+        );
         $this->_handleQueue([$this->ask(), 'process'], [$more]);
     }
 
-    public function processCache($more=null, $ttl=86400)
+    public function processCache($more=null, $ttl=null)
     {
-        \PMVC\dev(function() use (&$more){
-            $more[]= 'request_header';
-        }, 'req');
+        \PMVC\dev(
+            function () use (&$more) {
+                $more[]= 'request_header';
+            }, 'req'
+        );
+        if (is_null($ttl)) {
+            $ttl = $this['ttl'];
+        }
         $this->_handleQueue([$this->cache(), 'process'], [$more, $ttl]);
         $this['cache']->finish();
     }
