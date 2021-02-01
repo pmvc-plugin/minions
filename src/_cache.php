@@ -96,7 +96,7 @@ class cache
                     * @help Minons cache status. could use with ?--trace=[curl|curl-json]
                     */
                     function () use ($r) {
-                      return $this->cache_dev($r);
+                      return $this->caller->cache_dev($r, $this->_getPurgeDevKey($r->hash));
                     }, 'cache'
                 ); // dev
 

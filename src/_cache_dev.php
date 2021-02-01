@@ -7,7 +7,7 @@ use PMVC\PlugIn\curl\CurlResponder;
 ${_INIT_CONFIG}[_CLASS] = __NAMESPACE__.'\CacheDev';
 
 class CacheDev {
-    public function __invoke(CurlResponder $r)
+    public function __invoke(CurlResponder $r, $purgeKey)
     {
       $rinfo = null;
       \PMVC\dev(
@@ -41,7 +41,7 @@ class CacheDev {
       return [
         $r->url,
         'r'=>$rinfo,
-        'purge'=> $this->_getPurgeDevKey($hash),
+        'purge'=> $purgeKey,
         'trace'=> \PMVC\plug('debug')->parseTrace(debug_backtrace(), 15, 1)
       ];
     }
