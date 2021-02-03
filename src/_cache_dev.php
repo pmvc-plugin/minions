@@ -23,7 +23,7 @@ class CacheDev {
              * @help Decode body with json, use with ?--trace=cache,curl 
              */
             function () use (&$rinfo, $r) {
-              $rinfo['body'] = \PMVC\fromJson($r->body);
+              $rinfo['body'] = \PMVC\fromJson($r->body, true);
             }, 'curl-json'
           );
 
