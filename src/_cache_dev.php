@@ -16,9 +16,7 @@ class CacheDev {
          */
         function () use (&$rinfo, $r) {
           $rinfo = (array)$r;
-          if (!mb_detect_encoding($rinfo['body'], 'utf-8', true)) {
-            $rinfo['body'] = utf8_encode($rinfo['body']);
-          }
+          $rinfo['body'] = \PMVC\utf8Export($rinfo['body']);
 
           \PMVC\dev(
             /**
