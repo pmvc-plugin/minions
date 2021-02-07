@@ -100,8 +100,8 @@ class ask
                     print_r([$json, $minionsServer],true)
                 );
             }
-            $serverTime = $json->serverTime;
             $r =& $json->r;
+            $serverTime = $r->serverTime;
             $debugs =& $json->debugs;
             $setCookie = \PMVC\get($r->header,'set-cookie');
             if (!empty($setCookie)) {
