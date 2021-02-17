@@ -104,9 +104,9 @@ class fakeCurlWithAsk {
         $r = (object)[
             'body'=>json_encode([
                 'r'=>[
-                    'body'=>urlencode(gzcompress('', 9))
-                ],
-                'serverTime'=>111
+                    'body'=>urlencode(gzcompress('', 9)),
+                    'serverTime'=>111
+                ]
             ])
         ];
         $callback($r, $this);
