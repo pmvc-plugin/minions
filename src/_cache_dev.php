@@ -40,7 +40,6 @@ class CacheDev {
         $r->url,
         'r'=>$rinfo,
         'purge'=> $purgeKey,
-        'trace'=> \PMVC\plug('debug')->parseTrace(debug_backtrace(), 15, 8)
       ];
     }
 }

@@ -49,7 +49,6 @@ class cache
                 'purge'=> $this->_getPurgeDevKey($hash),
                 'url'=>$options[CURLOPT_URL],
                 'options'=>$options,
-                'trace'=> \PMVC\plug('debug')->parseTrace(debug_backtrace(), 15, 1)
               ];
             };
             if (is_callable($callback)) {
