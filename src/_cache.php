@@ -31,6 +31,7 @@ class cache
         $setCacheCallback = function ($r, $curlHelper) use (
             $callback,
             $hash,
+            $options,
             $ttl,
             $more
         ) {
@@ -41,6 +42,16 @@ class cache
             } else {
                 $r->more = null;
             }
+            $r->info = function () use ($hash, $options) {
+              return [
+                'status'=>'miss',
+                'hash'=>$hash,
+                'purge'=> $this->_getPurgeDevKey($hash),
+                'url'=>$options[CURLOPT_URL],
+                'options'=>$options,
+                'trace'=> \PMVC\plug('debug')->parseTrace(debug_backtrace(), 15, 1)
+              ];
+            };
             if (is_callable($callback)) {
                 $bool = $callback($r, $curlHelper);
             }
@@ -51,6 +62,14 @@ class cache
                 $this->_db->setCache($ttl);
                 $this->_db[$hash] = json_encode($r);
             }
+            \PMVC\dev(
+              /**
+               * @help Minons cache status. could use with ?--trace=[curl|curl-json]
+               */
+              function () use ($r) {
+                return $r->info();
+              }, 'cache'
+            ); // dev
         };
         if ($this->hasCache($hash)) {
             $r = $this->getCache($hash);
@@ -61,6 +80,10 @@ class cache
                 } else {
                     $r->more = null;
                 }
+
+                $r->info = function() use($r) {
+                  return $this->caller->cache_dev($r, $this->_getPurgeDevKey($r->hash));
+                };
 
                 if (is_callable($callback)) {
                     $CurlHelper = new CurlHelper();
@@ -92,14 +115,13 @@ class cache
                 );
 
                 \PMVC\dev(
-                    /**
-                    * @help Minons cache status. could use with ?--trace=[curl|curl-json]
-                    */
-                    function () use ($r) {
-                      return $this->caller->cache_dev($r, $this->_getPurgeDevKey($r->hash));
-                    }, 'cache'
+                  /**
+                   * @help Minons cache status. could use with ?--trace=[curl|curl-json]
+                   */
+                  function () use ($r) {
+                    return $r->info();
+                  }, 'cache'
                 ); // dev
-
                 return;
             }
         }
@@ -109,18 +131,7 @@ class cache
         );
         $oCurl->resetOptions($options);
 
-        \PMVC\dev(
-            function () use ($hash, $options) {
-                return [
-                'status'=>'miss',
-                'hash'=>$hash,
-                'purge'=> $this->_getPurgeDevKey($hash),
-                'url'=>$options[CURLOPT_URL],
-                'options'=>$options,
-                'trace'=> \PMVC\plug('debug')->parseTrace(debug_backtrace(), 15, 1)
-                ];
-            }, 'cache'
-        );
+
     }
 
     private function _getPurgeDevKey($hash)
