@@ -36,9 +36,9 @@ class cache
             $more
         ) {
             $bool = null;
-            $keepMore = $r->more;
+            $this->_storeCache($r, $hash, $ttl);
             if ($more) {
-                $r->more = \PMVC\get($keepMore, $more);
+                $r->more = \PMVC\get($r->more, $more);
             } else {
                 $r->more = null;
             }
@@ -54,12 +54,8 @@ class cache
             if (is_callable($callback)) {
                 $bool = $callback($r, $curlHelper);
             }
-            if ($bool!==false) {
-                $r->body = urlencode(gzcompress($r->body, 9));
-                $r->createTime = time();
-                $r->more = $keepMore;
-                $this->_db->setCache($ttl);
-                $this->_db[$hash] = json_encode($r);
+            if ($bool===false) {
+                $this->purge($hash);
             }
             \PMVC\dev(
               /**
@@ -158,6 +154,15 @@ class cache
         } else {
             return $maybeCurl;
         }
+    }
+
+    private function _storeCache($r, $hash, $ttl)
+    {
+      $r->createTime = time();
+      $next = clone $r;
+      $next->body = urlencode(gzcompress($r->body, 9));
+      $this->_db->setCache($ttl);
+      $this->_db[$hash] = json_encode($next);
     }
 
     public function getCache($maybeHash)
