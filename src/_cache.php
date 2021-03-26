@@ -6,7 +6,7 @@ use LengthException;
 use PMVC\PlugIn\curl\CurlHelper;
 use PMVC\PlugIn\curl\CurlResponder;
 
-${_INIT_CONFIG}[_CLASS] = __NAMESPACE__ . "\cache";
+${_INIT_CONFIG}[_CLASS] = __NAMESPACE__ . '\cache';
 
 class cache
 {
@@ -15,7 +15,7 @@ class cache
     public function __construct($caller)
     {
         $this->_curl = \PMVC\plug(minions::curl);
-        $this->_db = \PMVC\plug("guid")->getDb("MinionsCache");
+        $this->_db = \PMVC\plug('guid')->getDb('MinionsCache');
     }
 
     public function __invoke()
@@ -44,11 +44,11 @@ class cache
             }
             $r->info = function () use ($hash, $options) {
                 return [
-                    "status" => "miss",
-                    "hash" => $hash,
-                    "purge" => $this->_getPurgeDevKey($hash),
-                    "url" => $options[CURLOPT_URL],
-                    "options" => $options,
+                    'status' => 'miss',
+                    'hash' => $hash,
+                    'purge' => $this->_getPurgeDevKey($hash),
+                    'url' => $options[CURLOPT_URL],
+                    'options' => $options,
                 ];
             };
             if (is_callable($callback)) {
@@ -64,12 +64,12 @@ class cache
                 function () use ($r) {
                     return $r->info();
                 },
-                "cache"
+                'cache'
             ); // dev
         };
         if ($this->hasCache($hash)) {
             $r = $this->getCache($hash);
-            $createTime = \PMVC\get($r, "createTime", 0);
+            $createTime = \PMVC\get($r, 'createTime', 0);
             if (!$this->_isExpire($createTime, $ttl)) {
                 if (!empty($more)) {
                     $r->more = \PMVC\get($r->more, $more);
@@ -101,7 +101,7 @@ class cache
                      */
                     function () use ($r) {
                         $r->purge();
-                        return ["Clean-Cache" => $r->hash];
+                        return ['Clean-Cache' => $r->hash];
                     },
                     $this->_getPurgeDevKey($r->hash)
                 );
@@ -113,7 +113,7 @@ class cache
                     function () use ($r) {
                         return $r->info();
                     },
-                    "cache"
+                    'cache'
                 ); // dev
                 return;
             }
@@ -124,7 +124,7 @@ class cache
 
     private function _getPurgeDevKey($hash)
     {
-        return "purge-" . $hash;
+        return 'purge-' . $hash;
     }
 
     private function _isExpire($createTime, $ttl)
