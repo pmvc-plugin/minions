@@ -87,6 +87,7 @@ class cache
                         $setCacheCallback
                     );
                     $CurlHelper->resetOptions($options);
+                    $r->cache = true;
                     $ttl = call_user_func_array(
                         $callback,
                         [
