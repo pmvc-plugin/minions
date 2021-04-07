@@ -4,6 +4,7 @@ namespace PMVC\PlugIn\minions;
 
 use LengthException;
 use PMVC\ListIterator;
+use PMVC\PlugIn\curl\CurlResponder;
 
 ${_INIT_CONFIG}[_CLASS] = __NAMESPACE__.'\ask';
 
@@ -100,7 +101,7 @@ class ask
                     print_r([$json, $minionsServer],true)
                 );
             }
-            $r =& $json->r;
+            $r = CurlResponder::fromObject($json->r);
             $serverTime = $r->serverTime;
             $debugs =& $json->debugs;
             $setCookie = \PMVC\get($r->header,'set-cookie');
@@ -108,7 +109,6 @@ class ask
                 $this->_storeCookies($setCookie, $host);
             }
             unset($json);
-            $r->body = gzuncompress(urldecode($r->body));
             \PMVC\dev(
             /**
              * @help Minions ask helper 
