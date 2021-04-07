@@ -6,7 +6,7 @@ use LengthException;
 use PMVC\ListIterator;
 use PMVC\PlugIn\curl\CurlResponder;
 
-${_INIT_CONFIG}[_CLASS] = __NAMESPACE__.'\ask';
+${_INIT_CONFIG}[_CLASS] = __NAMESPACE__ . '\ask';
 
 class ask
 {
@@ -19,8 +19,7 @@ class ask
         if (empty($hosts) || !is_array($hosts)) {
             throw new LengthException('Minons hosts is empty.');
         }
-        $this->_hosts = (new ListIterator($hosts))
-            ->getIterator();
+        $this->_hosts = (new ListIterator($hosts))->getIterator();
         $this->_curl = \PMVC\plug(minions::curl);
     }
 
@@ -37,7 +36,7 @@ class ask
                     $h,
                     [
                         minions::options => $handler->set(),
-                        minions::callback=> $handler->getCallback()
+                        minions::callback => $handler->getCallback(),
                     ],
                     $more
                 );
@@ -45,7 +44,7 @@ class ask
             $this->_curl->process();
         }
     }
-    
+
     public function __invoke()
     {
         return $this;
@@ -63,7 +62,7 @@ class ask
         sleep(1);
     }
 
-    private function ask($minionsServer, $curl, $more=null)
+    private function ask($minionsServer, $curl, $more = null)
     {
         $callback = $curl[minions::callback];
         $options = $curl[minions::options];
@@ -74,9 +73,7 @@ class ask
             if (!empty($options[CURLOPT_COOKIE])) {
                 $cookies = array_replace(
                     $cookies,
-                    $pCookie->parseCookieString(
-                        $options[CURLOPT_COOKIE]
-                    )
+                    $pCookie->parseCookieString($options[CURLOPT_COOKIE])
                 );
             }
             $options[CURLOPT_COOKIE] = $pCookie->toString($cookies);
@@ -87,63 +84,66 @@ class ask
             $options += $minionsServer[1];
         }
         $curlOptions = [
-            'curl'=> &$options,
-            'more'=> &$more
+            'curl' => &$options,
+            'more' => &$more,
         ];
-        \PMVC\dev(function() use (&$curlOptions) {
-            $curlOptions['--trace']=1;
+        \PMVC\dev(function () use (&$curlOptions) {
+            $curlOptions['--trace'] = 1;
         }, 'minions-client-debug');
-        $this->_curl->post($host, function($r, $curlHelper) use($callback, $minionsServer, $host) {
-            $json =\PMVC\fromJson($r->body);
-            if (!isset($json->r)) {
-                return !trigger_error(
-                    'Minions respond failed. '.
-                    print_r([$json, $minionsServer],true)
+        $this->_curl->post(
+            $host,
+            function ($r, $curlHelper) use ($callback, $minionsServer, $host) {
+                $json = \PMVC\fromJson($r->body);
+                if (!isset($json->r)) {
+                    return !trigger_error(
+                        'Minions respond failed. ' .
+                            print_r([$json, $minionsServer], true)
+                    );
+                }
+                $r = CurlResponder::fromObject($json->r);
+                $serverTime = $r->serverTime;
+                $debugs = &$json->debugs;
+                $setCookie = \PMVC\get($r->header, 'set-cookie');
+                if (!empty($setCookie)) {
+                    $this->_storeCookies($setCookie, $host);
+                }
+                unset($json);
+                \PMVC\dev(
+                    /**
+                     * @help Minions ask helper
+                     */
+                    function () use (
+                        $minionsServer,
+                        $serverTime,
+                        $r,
+                        $curlHelper,
+                        $debugs
+                    ) {
+                        $optUtil = [\PMVC\plug('curl')->opt_to_str(), 'all'];
+                        $curlField = $optUtil($curlHelper->set());
+                        $curlField['POSTFIELDS']['curl'] = $optUtil(
+                            $curlField['POSTFIELDS']['curl']
+                        );
+                        return [
+                            'Minions Client' => $minionsServer,
+                            'Minions Debugs' => $debugs,
+                            'Minions Time' => $serverTime,
+                            'Respond' => $r,
+                            'Curl Information' => $curlField,
+                            'Body' => \PMVC\fromJson($r->body),
+                        ];
+                    },
+                    'minions'
                 );
-            }
-            $r = CurlResponder::fromObject($json->r);
-            $serverTime = $r->serverTime;
-            $debugs =& $json->debugs;
-            $setCookie = \PMVC\get($r->header,'set-cookie');
-            if (!empty($setCookie)) {
-                $this->_storeCookies($setCookie, $host);
-            }
-            unset($json);
-            \PMVC\dev(
-            /**
-             * @help Minions ask helper 
-             */
-            function() use (
-                $minionsServer,
-                $serverTime,
-                $r,
-                $curlHelper,
-                $debugs
-            ){
-                $optUtil = [\PMVC\plug('curl')->opt_to_str(), 'all']; 
-                $curlField = $optUtil($curlHelper->set());
-                $curlField['POSTFIELDS']['curl'] = $optUtil($curlField['POSTFIELDS']['curl']);
-                return [
-                    'Minions Client'=>$minionsServer,
-                    'Minions Debugs'=>$debugs,
-                    'Minions Time'=>$serverTime,
-                    'Respond'=>$r,
-                    'Curl Information'=> $curlField,
-                    'Body'=> \PMVC\fromJson($r->body)
-                ];
-            },'minions');
-            if (is_callable($callback)) {
-                call_user_func (
-                    $callback, 
-                    $r,
-                    $curlHelper,
-                    [ 
-                        $minionsServer, 
-                        $serverTime
-                    ]
-                );
-            }
-        }, $curlOptions);
+                if (is_callable($callback)) {
+                    call_user_func($callback, $r, $curlHelper, [
+                        $minionsServer,
+                        $serverTime,
+                    ]);
+                }
+            },
+            $curlOptions
+        );
     }
 
     private function _getHost($minionsServer)
@@ -155,8 +155,8 @@ class ask
         }
         if (empty($host)) {
             return !trigger_error(
-                'Minions server config not correct. '.
-                var_export($minionsServer,true),
+                'Minions server config not correct. ' .
+                    var_export($minionsServer, true),
                 E_USER_WARNING
             );
         }
