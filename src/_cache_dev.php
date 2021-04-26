@@ -17,6 +17,7 @@ class CacheDev {
         function () use (&$rinfo, $r) {
           $rinfo = (array)$r;
           $rinfo['body'] = \PMVC\fromJson($r->body, true);
+          unset($rinfo['info']);
         }, 'curl'
       );
 
@@ -25,11 +26,11 @@ class CacheDev {
           $r,
           ['hash', 'expire', 'dbCompositeKey']
         );
+        $rinfo['help'] = 'get move info use ?--trace=curl';
+        $rinfo['url'] = $r->url;
       }
-      return [
-        $r->url,
-        'r'=>$rinfo,
-        'purge'=> $purgeKey,
-      ];
+      $rinfo['purge'] = $purgeKey;
+      
+      return $rinfo;
     }
 }
