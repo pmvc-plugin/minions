@@ -2,15 +2,15 @@
 
 namespace PMVC\PlugIn\minions;
 
-use PHPUnit_Framework_TestCase;
 use PMVC;
+use PMVC\TestCase;
 use ReflectionClass;
 
-class AskTest extends PHPUnit_Framework_TestCase
+class AskTest extends TestCase
 {
     private $_plug = 'minions';
 
-    function setup()
+    function pmvc_setup()
     {
         \PMVC\unplug($this->_plug);
     }

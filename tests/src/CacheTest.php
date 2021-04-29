@@ -2,12 +2,12 @@
 
 namespace PMVC\PlugIn\minions;
 
-use PHPUnit_Framework_TestCase;
 use PMVC;
 use PMVC\HashMap;
 use PMVC\PlugIn;
+use PMVC\TestCase;
 
-class CacheTest extends PHPUnit_Framework_TestCase
+class CacheTest extends TestCase
 {
     private $_plug = 'minions';
     function testCacheProcess()

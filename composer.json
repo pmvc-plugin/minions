@@ -16,5 +16,8 @@
         "pmvc-plugin/cookie": "*",
         "pmvc-plugin/curl": "*"
     },
+    "require-dev": {
+        "pmvc-plugin/unit": "*"
+    },
     "minimum-stability": "dev"
 }

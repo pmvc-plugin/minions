@@ -2,5 +2,5 @@
 
 $path = __DIR__.'/../vendor/autoload.php';
 include $path;
-\PMVC\Load::plug();
-\PMVC\addPlugInFolders([__DIR__.'/../../']);
+\PMVC\Load::plug(['unit' => null], [__DIR__.'/../../']);
+
