@@ -27,9 +27,10 @@ class CacheDev {
           ['hash', 'expire', 'dbCompositeKey']
         );
         $rinfo['help'] = 'get move info use ?--trace=curl';
-        $rinfo['url'] = $r->url;
       }
+      $rinfo['-url'] = $r->url;
       $rinfo['purge'] = $purgeKey;
+      unset($rinfo['url']);
       
       return $rinfo;
     }
