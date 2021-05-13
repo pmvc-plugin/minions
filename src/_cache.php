@@ -44,10 +44,10 @@ class cache
             }
             $r->info = function () use ($hash, $options) {
                 return [
+                    '-url' => $options[CURLOPT_URL],
                     'status' => 'miss',
                     'hash' => $hash,
                     'purge' => $this->_getPurgeDevKey($hash),
-                    'url' => $options[CURLOPT_URL],
                     'options' => $options,
                 ];
             };
