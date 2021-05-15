@@ -48,7 +48,7 @@ class cache
                     'status' => 'miss',
                     'hash' => $hash,
                     'purge' => $this->_getPurgeDevKey($hash),
-                    'options' => $options,
+                    'options' => \PMVC\plug('curl')->optToStr()->all($options),
                 ];
             };
             if (is_callable($callback)) {
