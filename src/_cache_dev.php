@@ -16,7 +16,7 @@ class CacheDev {
          */
         function () use (&$rinfo, $r) {
           $rinfo = (array)$r;
-          $rinfo['body'] = \PMVC\fromJson($r->body, true);
+          $rinfo['body'] = \PMVC\plug('curl')->bodyDev($r->body); 
           unset($rinfo['info']);
         }, 'curl'
       );

@@ -59,7 +59,7 @@ class cache
             }
             \PMVC\dev(
                 /**
-                 * @help Minons cache status. could use with ?--trace=[curl|curl-json]
+                 * @help Minions cache status. could use with ?--trace=[curl|curl-json]
                  */
                 function () use ($r) {
                     return $r->info();

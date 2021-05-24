@@ -119,18 +119,31 @@ class ask
                         $curlHelper,
                         $debugs
                     ) {
-                        $optUtil = [\PMVC\plug('curl')->opt_to_str(), 'all'];
+                        $pCurl = \PMVC\plug('curl');
+                        $optUtil = [$pCurl->opt_to_str(), 'all'];
                         $curlField = $optUtil($curlHelper->set());
-                        $curlField['POSTFIELDS']['curl'] = $optUtil(
-                            $curlField['POSTFIELDS']['curl']
+                        $curlField['POSTFIELDS']['cook']['curl'] = $optUtil(
+                            $curlField['POSTFIELDS']['cook']['curl']
                         );
+                        $more = \PMVC\get($curlField['POSTFIELDS']['cook'], 'more');
+                        if (!empty($more)) {
+                            $moreUtil = [$pCurl->info_to_str(), 'one'];
+                            $moreInfo = [];
+                            foreach($more as $mk) {
+                                $moreInfo[$mk] = $moreUtil($mk);
+                            }
+                            $curlField['POSTFIELDS']['cook']['more'] = $moreInfo;
+                        }
+                        $body = $pCurl->bodyDev($r->body);
+                        unset($r->info);
+                        unset($r->body);
                         return [
                             'Minions Client' => $minionsServer,
                             'Minions Debugs' => $debugs,
                             'Minions Time' => $serverTime,
-                            'Respond' => $r,
+                            'Respond' => \PMVC\get($r),
                             'Curl Information' => $curlField,
-                            'Body' => \PMVC\fromJson($r->body),
+                            'Body' => $body,
                         ];
                     },
                     'minions'
