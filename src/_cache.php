@@ -48,7 +48,9 @@ class cache
                     'status' => 'miss',
                     'hash' => $hash,
                     'purge' => $this->_getPurgeDevKey($hash),
-                    'options' => \PMVC\plug('curl')->optToStr()->all($options),
+                    'options' => \PMVC\plug('curl')
+                        ->optToStr()
+                        ->all($options),
                 ];
             };
             if (is_callable($callback)) {
@@ -97,13 +99,14 @@ class cache
 
                 \PMVC\dev(
                     /**
-                     * @help Purge minons cache
+                     * @help Purge minons cache. [url]
                      */
                     function () use ($r) {
                         $r->purge();
                         return ['Clean-Cache' => $r->hash];
                     },
-                    $this->_getPurgeDevKey($r->hash)
+                    $this->_getPurgeDevKey($r->hash),
+                    ['url' => $r->url]
                 );
 
                 \PMVC\dev(
