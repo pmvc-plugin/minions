@@ -24,10 +24,11 @@ class CacheDev {
       if (empty($rinfo)) {
         $rinfo = \PMVC\get(
           $r,
-          ['hash', 'expire', 'dbCompositeKey']
+          ['hash', 'expire', 'dbCompositeKey', 'createTime']
         );
         $rinfo['help'] = 'get move info use ?--trace=curl';
       }
+      $rinfo['createLocalTime'] = date("Y/m/d H:i:s", $rinfo['createTime']);
       $rinfo['-url'] = $r->url;
       $rinfo['purge'] = $purgeKey;
       unset($rinfo['url']);

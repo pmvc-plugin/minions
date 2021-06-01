@@ -103,7 +103,12 @@ class cache
                      */
                     function () use ($r) {
                         $r->purge();
-                        return ['Clean-Cache' => $r->hash];
+                        return [
+                            'Clean-Cache' => [
+                                'hash' => $r->hash,
+                                'url' => $r->url,
+                            ],
+                        ];
                     },
                     $this->_getPurgeDevKey($r->hash),
                     ['url' => $r->url]
