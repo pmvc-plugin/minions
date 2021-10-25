@@ -49,7 +49,7 @@ class cache
                     'hash' => $hash,
                     'purge' => $this->_getPurgeDevKey($hash),
                     'options' => \PMVC\plug('curl')
-                        ->optToStr()
+                        ->opt_to_str()
                         ->all($options),
                 ];
             };
