@@ -61,7 +61,7 @@ class cache
             }
             \PMVC\dev(
                 /**
-                 * @help Minions cache status. could use with ?--trace=[curl|curl-json]
+                 * @help Minions cache status. could use with ?--trace=curl
                  */
                 function () use ($r) {
                     return $r->info();
@@ -116,7 +116,7 @@ class cache
 
                 \PMVC\dev(
                     /**
-                     * @help Minons cache status. could use with ?--trace=[curl|curl-json]
+                     * @help Minons cache status. could use with ?--trace=curl
                      */
                     function () use ($r) {
                         return $r->info();
@@ -161,7 +161,10 @@ class cache
     {
         $r->createTime = time();
         $next = clone $r;
-        $next->body = urlencode(gzcompress($r->body, 9));
+        $nextBody = \PMVC\get($r, 'body');
+        if ($nextBody) {
+          $next->body = urlencode(gzcompress($nextBody, 9));
+        }
         $this->_db->setCache($ttl);
         $this->_db[$hash] = json_encode($next);
     }

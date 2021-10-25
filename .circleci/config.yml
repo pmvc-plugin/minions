@@ -1,0 +1,48 @@
+version: 2.1
+
+jobs:
+  unittest:
+    parameters:
+      php-version:
+        type: string
+    docker:
+      - image: hillliu/pmvc-phpunit:<< parameters.php-version >>
+    working_directory: /var/www/minions
+    steps:
+      - checkout
+      - run:
+          name: "Display information"
+          command: |
+            date
+            php -v
+            php -m
+            composer --version
+            phpunit --version
+      - run:
+          name: Composer install packages
+          command: |
+            composer update
+            composer install --prefer-source
+      - run:
+          name: PHPUnit
+          command: |
+            ENABLE_COVERAGE=false
+            if [ "<< parameters.php-version >>" == "8" ] && [ "$ENABLE_COVERAGE" == "true" ]; then
+              XDEBUG_MODE=coverage phpunit --coverage-clover clover.xml
+              coveralls --coverage_clover=clover.xml -v -o coveralls-upload.json
+            else
+              phpunit
+            fi
+      - store_artifacts:
+          path: /var/www/minions/clover.xml
+      - store_artifacts:
+          path: /var/www/minions/coveralls-upload.json
+
+workflows:
+  run-job:
+    jobs:
+      - unittest:
+          matrix:
+            name: test-<< matrix.php-version >>
+            parameters:
+              php-version: ["8", "5.6"]

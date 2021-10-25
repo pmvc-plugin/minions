@@ -89,7 +89,7 @@ class ask
         ];
         \PMVC\dev(function () use (&$curlOptions) {
             $curlOptions['--trace'] = 1;
-        }, 'minions-client-debug');
+        }, 'debug');
         $this->_curl->post(
             $host,
             function ($r, $curlHelper) use ($callback, $minionsServer, $host) {
@@ -119,34 +119,40 @@ class ask
                         $curlHelper,
                         $debugs
                     ) {
+                        $debugRespond = clone $r;
                         $pCurl = \PMVC\plug('curl');
                         $optUtil = [$pCurl->opt_to_str(), 'all'];
                         $curlField = $optUtil($curlHelper->set());
                         $curlField['POSTFIELDS']['cook']['curl'] = $optUtil(
                             $curlField['POSTFIELDS']['cook']['curl']
                         );
-                        $more = \PMVC\get($curlField['POSTFIELDS']['cook'], 'more');
+                        $more = \PMVC\get(
+                            $curlField['POSTFIELDS']['cook'],
+                            'more'
+                        );
                         if (!empty($more)) {
                             $moreUtil = [$pCurl->info_to_str(), 'one'];
                             $moreInfo = [];
-                            foreach($more as $mk) {
+                            foreach ($more as $mk) {
                                 $moreInfo[$mk] = $moreUtil($mk);
                             }
-                            $curlField['POSTFIELDS']['cook']['more'] = $moreInfo;
+                            $curlField['POSTFIELDS']['cook'][
+                                'more'
+                            ] = $moreInfo;
                         }
-                        $body = $pCurl->bodyDev($r->body);
-                        unset($r->info);
-                        unset($r->body);
+                        $body = $pCurl->body_dev($debugRespond->body);
+                        unset($debugRespond->info);
+                        unset($debugRespond->body);
                         return [
                             'Minions Client' => $minionsServer,
                             'Minions Debugs' => $debugs,
                             'Minions Time' => $serverTime,
-                            'Respond' => \PMVC\get($r),
+                            'Respond' => \PMVC\get($debugRespond),
                             'Curl Information' => $curlField,
                             'Body' => $body,
                         ];
                     },
-                    'minions'
+                    'curl'
                 );
                 if (is_callable($callback)) {
                     call_user_func($callback, $r, $curlHelper, [
