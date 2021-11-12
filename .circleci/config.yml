@@ -5,9 +5,12 @@ jobs:
     parameters:
       php-version:
         type: string
+      plugin-name:
+        type: string
+        default: "minions"
     docker:
       - image: hillliu/pmvc-phpunit:<< parameters.php-version >>
-    working_directory: /var/www/minions
+    working_directory: /var/www/<< parameters.plugin-name >>
     steps:
       - checkout
       - run:
@@ -34,15 +37,14 @@ jobs:
               phpunit
             fi
       - store_artifacts:
-          path: /var/www/minions/clover.xml
+          path: /var/www/<< parameters.plugin-name >>/clover.xml
       - store_artifacts:
-          path: /var/www/minions/coveralls-upload.json
+          path: /var/www/<< parameters.plugin-name >>/coveralls-upload.json
 
 workflows:
   run-job:
     jobs:
       - unittest:
           matrix:
-            name: test-<< matrix.php-version >>
             parameters:
               php-version: ["8", "5.6"]

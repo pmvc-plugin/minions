@@ -11,11 +11,11 @@ ${_INIT_CONFIG}[_CLASS] = __NAMESPACE__ . '\cache';
 class cache
 {
     private $_curl;
-    private $_db;
+    private $_storage;
     public function __construct($caller)
     {
         $this->_curl = \PMVC\plug(minions::curl);
-        $this->_db = \PMVC\plug('guid')->getDb('MinionsCache');
+        $this->setStore(\PMVC\plug('guid')->getModel('MinionsCache'));
     }
 
     public function __invoke()
@@ -165,28 +165,28 @@ class cache
         if ($nextBody) {
           $next->body = urlencode(gzcompress($nextBody, 9));
         }
-        $this->_db->setCache($ttl);
-        $this->_db[$hash] = json_encode($next);
+        $this->_storage->setTTL($ttl);
+        $this->_storage[$hash] = json_encode($next);
     }
 
     public function getCache($maybeHash)
     {
         $hash = $this->_getHash($maybeHash);
-        $r = CurlResponder::fromJson($this->_db[$hash]);
+        $r = CurlResponder::fromJson($this->_storage[$hash]);
         if (!$r) {
             return false;
         }
-        $r->expire = $this->_db->ttl($hash);
+        $r->expire = $this->_storage->ttl($hash);
         $r->hash = $hash;
         $r->purge = $this->getPurge($hash);
-        $r->dbCompositeKey = $this->_db->getCompositeKey($hash);
+        $r->dbCompositeKey = $this->_storage->getCompositeKey($hash);
         return $r;
     }
 
     public function hasCache($maybeHash)
     {
         $hash = $this->_getHash($maybeHash);
-        return isset($this->_db[$hash]);
+        return isset($this->_storage[$hash]);
     }
 
     public function getPurge($maybeHash)
@@ -200,9 +200,9 @@ class cache
     public function purge($maybeHash)
     {
         $hash = $this->_getHash($maybeHash);
-        if (isset($this->_db[$hash])) {
-            unset($this->_db[$hash]);
-            return !isset($this->_db[$hash]);
+        if (isset($this->_storage[$hash])) {
+            unset($this->_storage[$hash]);
+            return !isset($this->_storage[$hash]);
         } else {
             return false;
         }
@@ -223,8 +223,8 @@ class cache
         $this->_curl = $curl;
     }
 
-    public function setStore($db)
+    public function setStore($model)
     {
-        $this->_db = $db;
+        $this->_storage = $model;
     }
 }

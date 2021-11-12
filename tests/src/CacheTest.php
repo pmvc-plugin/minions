@@ -21,20 +21,20 @@ class CacheTest extends TestCase
             _CLASS=>__NAMESPACE__.'\FakeGuid'
         ]);
         $minions->processCache(null, 1000);
-        $this->assertTrue(isset($guid['db']));
+        $this->assertTrue(isset($guid['model']));
     }
 }
 
 class FakeGuid extends PlugIn {
-    function getDb()
+    function getModel()
     {
-        $this['db'] = new FakeMinionsDb();
-        return $this['db'];
+        $this['model'] = new FakeMinionsDb();
+        return $this['model'];
     }
 }
 
 class FakeMinionsDb extends HashMap {
-    function setCache()
+    function setTTL()
     {
 
     }
