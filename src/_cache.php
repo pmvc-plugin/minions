@@ -99,7 +99,7 @@ class cache
 
                 \PMVC\dev(
                     /**
-                     * @help Purge minons cache. [url]
+                     * @help PURGE: [url]
                      */
                     function () use ($r) {
                         $r->purge();
@@ -132,7 +132,7 @@ class cache
 
     private function _getPurgeDevKey($hash)
     {
-        return 'purge-' . $hash;
+        return 'purge-' . substr($hash, 0, 8);
     }
 
     private function _isExpire($createTime, $ttl)
@@ -163,7 +163,7 @@ class cache
         $next = clone $r;
         $nextBody = \PMVC\get($r, 'body');
         if ($nextBody) {
-          $next->body = urlencode(gzcompress($nextBody, 9));
+            $next->body = urlencode(gzcompress($nextBody, 9));
         }
         $this->_storage->setTTL($ttl);
         $this->_storage[$hash] = json_encode($next);

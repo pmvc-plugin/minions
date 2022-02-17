@@ -47,4 +47,4 @@ workflows:
       - unittest:
           matrix:
             parameters:
-              php-version: ["8", "5.6"]
+              php-version: ["8.0", "5.6"]
