@@ -26,8 +26,11 @@ class CacheDev {
           $r,
           ['hash', 'expire', 'dbCompositeKey', 'createTime']
         );
-        $rinfo['help'] = 'get move info use ?--trace=curl';
       }
+      $rinfo['help'] = [
+        'curl' => 'Decode body with json',
+        'trace' => 'get trace info',
+      ];
       $rinfo['createLocalTime'] = date("Y/m/d H:i:s", $rinfo['createTime']);
       $rinfo['-url'] = $r->url;
       $rinfo['purge'] = $purgeKey;
