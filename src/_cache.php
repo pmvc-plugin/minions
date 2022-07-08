@@ -42,10 +42,11 @@ class cache
             } else {
                 $r->more = null;
             }
-            $r->info = function () use ($hash, $options) {
+            $r->info = function () use ($hash, $options, $ttl) {
                 return [
                     '-url' => $options[CURLOPT_URL],
                     'status' => 'miss',
+                    'ttl' => $ttl,
                     'hash' => $hash,
                     'purge' => $this->_getPurgeDevKey($hash),
                     'options' => \PMVC\plug('curl')
@@ -79,10 +80,11 @@ class cache
                     $r->more = null;
                 }
 
-                $r->info = function () use ($r) {
+                $r->info = function () use ($r, $ttl) {
                     return $this->caller->cache_dev(
                         $r,
-                        $this->_getPurgeDevKey($r->hash)
+                        $this->_getPurgeDevKey($r->hash),
+                        $ttl
                     );
                 };
 
