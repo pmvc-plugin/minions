@@ -108,55 +108,29 @@ class ask
                     $this->_storeCookies($setCookie, $host);
                 }
                 unset($json);
+                $r->info = function () use (
+                    $minionsServer,
+                    $serverTime,
+                    $r,
+                    $curlHelper,
+                    $debugs
+                ) {
+                    return $this->caller->ask_dev(
+                        compact(
+                            'minionsServer',
+                            'serverTime',
+                            'r',
+                            'curlHelper',
+                            'debugs'
+                        )
+                    );
+                };
                 \PMVC\dev(
                     /**
                      * @help Minions ask helper
                      */
-                    function () use (
-                        $minionsServer,
-                        $serverTime,
-                        $r,
-                        $curlHelper,
-                        $debugs
-                    ) {
-                        $debugRespond = clone $r;
-                        $pCurl = \PMVC\plug('curl');
-                        $optUtil = [$pCurl->opt_to_str(), 'all'];
-                        $curlField = $optUtil($curlHelper->set());
-                        $curlField['POSTFIELDS']['cook']['curl'] = $optUtil(
-                            $curlField['POSTFIELDS']['cook']['curl']
-                        );
-                        $more = \PMVC\get(
-                            $curlField['POSTFIELDS']['cook'],
-                            'more'
-                        );
-                        if (!empty($more)) {
-                            $moreUtil = [$pCurl->info_to_str(), 'one'];
-                            $moreInfo = [];
-                            foreach ($more as $mk) {
-                                $moreInfo[$mk] = $moreUtil($mk);
-                            }
-                            $curlField['POSTFIELDS']['cook'][
-                                'more'
-                            ] = $moreInfo;
-                        }
-                        $url = \PMVC\plug('url')->getUrl(
-                            $curlField[CURLOPT_URL]
-                        );
-                        $arrUrl = \PMVC\get($url);
-                        $arrUrl['query'] = \PMVC\get($url->query);
-                        $body = $pCurl->body_dev($debugRespond->body);
-                        $debugRespond->body = $body;
-                        unset($debugRespond->info);
-                        return [
-                            '-url' => (string) $url,
-                            'urlObj' => $arrUrl,
-                            'Minions Client' => $minionsServer,
-                            'Minions Debugs' => $debugs,
-                            'Minions Time' => $serverTime,
-                            'Respond' => \PMVC\get($debugRespond),
-                            'Curl Information' => $curlField,
-                        ];
+                    function () use ($r) {
+                        return $r->info();
                     },
                     'curl'
                 );
