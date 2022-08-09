@@ -140,16 +140,22 @@ class ask
                                 'more'
                             ] = $moreInfo;
                         }
+                        $url = \PMVC\plug('url')->getUrl(
+                            $curlField[CURLOPT_URL]
+                        );
+                        $arrUrl = \PMVC\get($url);
+                        $arrUrl['query'] = \PMVC\get($url->query);
                         $body = $pCurl->body_dev($debugRespond->body);
+                        $debugRespond->body = $body;
                         unset($debugRespond->info);
-                        unset($debugRespond->body);
                         return [
+                            '-url' => (string) $url,
+                            'urlObj' => $arrUrl,
                             'Minions Client' => $minionsServer,
                             'Minions Debugs' => $debugs,
                             'Minions Time' => $serverTime,
                             'Respond' => \PMVC\get($debugRespond),
                             'Curl Information' => $curlField,
-                            'Body' => $body,
                         ];
                     },
                     'curl'
