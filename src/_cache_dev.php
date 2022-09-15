@@ -35,7 +35,12 @@ class CacheDev
             'curl' => 'Decode body with json',
             'trace' => 'get trace info',
         ];
+        $rinfo['serverLocalTime'] = date('Y/m/d H:i:s');
         $rinfo['createLocalTime'] = date('Y/m/d H:i:s', $rinfo['createTime']);
+        $rinfo['expireLocalTime'] = date(
+            'Y/m/d H:i:s',
+            $rinfo['expire'] + time()
+        );
         $rinfo['-url'] = $r->url;
         $rinfo['purge'] = $purgeKey;
         $rinfo['ttl'] = $ttl;

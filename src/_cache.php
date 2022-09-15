@@ -70,66 +70,74 @@ class cache
                 'cache'
             ); // dev
         };
+
+        /**
+         * hasCache -> return cache
+         * noCache -> run $this->_curl->get
+         * isExipre default to true
+         * finial process will call with $this->finish
+         */
+        $isExpire = true;
+        $r = null;
         if ($this->hasCache($hash)) {
             $r = $this->getCache($hash);
-            $createTime = \PMVC\get($r, 'createTime', 0);
-            if (!$this->_isExpire($createTime, $ttl)) {
-                if (!empty($more)) {
-                    $r->more = \PMVC\get($r->more, $more);
-                } else {
-                    $r->more = null;
-                }
-
-                $r->info = function () use ($r, $ttl) {
-                    return $this->caller->cache_dev(
-                        $r,
-                        $this->_getPurgeDevKey($r->hash),
-                        $ttl
-                    );
-                };
-
-                if (is_callable($callback)) {
-                    $CurlHelper = new CurlHelper();
-                    $CurlHelper->setOptions(null, $setCacheCallback);
-                    $CurlHelper->resetOptions($options);
-                    $r->cache = true;
-                    $ttl = call_user_func_array($callback, [$r, $CurlHelper]);
-                }
-                if ($this->_isExpire($createTime, $ttl)) {
+            $isExpire = $this->_isExpire($r->createTime, $ttl);
+        }
+        if ($isExpire) {
+            $oCurl = $this->_curl->get(null, $setCacheCallback);
+            $oCurl->resetOptions($options);
+        } else {
+            $r->more = empty($more) ? null : \PMVC\get($r->more, $more);
+            if (is_callable($callback)) {
+                $CurlHelper = new CurlHelper();
+                $CurlHelper->setOptions(null, $setCacheCallback);
+                $CurlHelper->resetOptions($options);
+                $r->cache = true;
+                $nextTtl = call_user_func_array($callback, [$r, $CurlHelper]);
+                if ($this->_isExpire($r->createTime, $nextTtl)) {
                     $r->purge();
                 }
-
-                \PMVC\dev(
-                    /**
-                     * @help PURGE: [url]
-                     */
-                    function () use ($r) {
-                        $r->purge();
-                        return [
-                            'Clean-Cache' => [
-                                'hash' => $r->hash,
-                                'url' => $r->url,
-                            ],
-                        ];
-                    },
-                    $this->_getPurgeDevKey($r->hash),
-                    ['url' => $r->url]
-                );
-
-                \PMVC\dev(
-                    /**
-                     * @help Minons cache status. could use with ?--trace=curl
-                     */
-                    function () use ($r) {
-                        return $r->info();
-                    },
-                    'cache'
-                ); // dev
-                return;
             }
+            // locate after callback for update $ttl
+            $r->info = function () use ($r, $ttl, $nextTtl) {
+                if (is_numeric($nextTtl)) {
+                    $r->expire = $this->_calExpireSec($r->createTime, $nextTtl);
+                    $ttl = $nextTtl;
+                }
+                return $this->caller->cache_dev(
+                    $r,
+                    $this->_getPurgeDevKey($r->hash),
+                    $ttl
+                );
+            };
+
+            \PMVC\dev(
+                /**
+                 * @help PURGE: [url]
+                 */
+                function () use ($r) {
+                    $r->purge();
+                    return [
+                        'Clean-Cache' => [
+                            'hash' => $r->hash,
+                            'url' => $r->url,
+                        ],
+                    ];
+                },
+                $this->_getPurgeDevKey($r->hash),
+                ['url' => $r->url]
+            );
+
+            \PMVC\dev(
+                /**
+                 * @help Minons cache status. could use with ?--trace=curl
+                 */
+                function () use ($r) {
+                    return $r->info();
+                },
+                'cache'
+            ); // dev
         }
-        $oCurl = $this->_curl->get(null, $setCacheCallback);
-        $oCurl->resetOptions($options);
     }
 
     private function _getPurgeDevKey($hash)
@@ -137,16 +145,28 @@ class cache
         return 'purge-' . substr($hash, 0, 8);
     }
 
+    private function _calExpireSec($createTime, $ttl)
+    {
+        if (!$createTime) {
+            $createTime = 0;
+        }
+        if (is_numeric($ttl)) {
+            return $createTime + $ttl - time();
+        } else {
+            /**
+             * use for $this->_isExpire 
+             * only $ttl equal `false` or `number` will check expire, else will assume not expire.
+             */
+            return 0;
+        }
+    }
+
     private function _isExpire($createTime, $ttl)
     {
         if ($ttl === false) {
             return true;
         } else {
-            if (is_numeric($ttl)) {
-                return $createTime + $ttl - time() < 0;
-            } else {
-                return false;
-            }
+            return $this->_calExpireSec($createTime, $ttl) < 0;
         }
     }
 
